@@ -1,0 +1,25 @@
+{
+  "name": "your-obsidian-plugin",
+  "author": "Your Name <your@email.com",
+  "version": "0.0.1",
+  "description": "Describe your plugin",
+  "main": "main.js",
+  "scripts": {
+    "dev": "rollup --config rollup.config.js -w",
+    "build": "rollup --config rollup.config.js"
+  },
+  "keywords": [
+    "obsidian-md"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "17.1.0",
+    "@rollup/plugin-node-resolve": "11.1.1",
+    "@rollup/plugin-typescript": "8.1.1",
+    "@types/node": "14.14.25",
+    "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
+    "rollup": "2.38.5",
+    "tslib": "2.1.0",
+    "typescript": "4.1.3"
+  }
+}

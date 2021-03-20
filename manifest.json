@@ -1,0 +1,7 @@
+{
+  "id": "your-obsidian-plugin",
+  "name": "Obsidian Plugin Template",
+  "description": "A Simple Template for Plugins",
+  "isDesktopOnly": false,
+  "js": "main.js"
+}
