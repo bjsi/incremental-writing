@@ -2,22 +2,15 @@
 
 ## How to install the plugin
 
-Go to your obsidian plugins directory.
+Go to releases. Download the zip file. Unzip into your obsidian plugins directory.
 
-Clone this repo into the repository
+## Using the plugin
 
-Change directory into the repository.
+There are currently 4 commands:
 
-First, install the dependencies with
+1. Add note to queue: Adds the current note to the incremental writing queue.
+2. Add block to queue: Adds the current block to the incremental writing queue.
+3. Current repetition: Goes to the current repetition.
+4. Next repetition: Goes to the next repetition.
 
-```bash
-npm i
-```
-
-Then, you can compile the plugin with:
-
-```bash
-npm run build
-```
-
-This will create a `main.js` file in the project root. That is the entry point of the plugin.
+You can see your queue by going to /IW-Queues/IW-Queue.md. It's a simple markdown table.
