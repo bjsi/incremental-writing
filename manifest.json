@@ -1,5 +1,5 @@
 {
-  "id": "incremental-writing-obsidian-plugin",
+  "id": "obsidian-incremental-writing",
   "name": "Obsidian Incremental Writing Plugin",
   "description": "Incrementally review notes and blocks over time.",
   "isDesktopOnly": false,

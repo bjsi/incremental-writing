@@ -1,5 +1,5 @@
 {
-  "name": "incremental-writing-obsidian-plugin",
+  "name": "obsidian-incremental-writing",
   "author": "Jamesb <experimentallearning0@gmail.com",
   "version": "0.0.1",
   "description": "Incrementally review notes and blocks over time.",
