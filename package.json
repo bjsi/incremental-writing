@@ -1,15 +1,16 @@
 {
-  "name": "your-obsidian-plugin",
-  "author": "Your Name <your@email.com",
+  "name": "incremental-writing-obsidian-plugin",
+  "author": "Jamesb <experimentallearning0@gmail.com",
   "version": "0.0.1",
-  "description": "Describe your plugin",
+  "description": "Incrementally review notes and blocks over time.",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup --config rollup.config.js"
   },
   "keywords": [
-    "obsidian-md"
+    "obsidian-md",
+    "incremental writing"
   ],
   "license": "MIT",
   "devDependencies": {
@@ -21,5 +22,8 @@
     "rollup": "2.38.5",
     "tslib": "2.1.0",
     "typescript": "4.1.3"
+  },
+  "dependencies": {
+    "obsidian-daily-notes-interface": "^0.7.8"
   }
 }

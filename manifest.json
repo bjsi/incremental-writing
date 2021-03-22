@@ -1,7 +1,7 @@
 {
-  "id": "your-obsidian-plugin",
-  "name": "Obsidian Plugin Template",
-  "description": "A Simple Template for Plugins",
+  "id": "incremental-writing-obsidian-plugin",
+  "name": "Obsidian Incremental Writing Plugin",
+  "description": "Incrementally review notes and blocks over time.",
   "isDesktopOnly": false,
   "js": "main.js"
 }
