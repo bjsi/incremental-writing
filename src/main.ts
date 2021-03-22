@@ -1,4 +1,4 @@
-import { Setting, PluginSettingTab, App, Plugin, Modal, ButtonComponent, Notice, TextComponent, SliderComponent,  MarkdownView, TFile  } from "obsidian";
+import { OpenViewState, Setting, PluginSettingTab, App, Plugin, Modal, ButtonComponent, Notice, TextComponent, SliderComponent,  MarkdownView, TFile  } from "obsidian";
 import { IW_QUEUE_FILE, IW_QUEUE_FOLDER } from './constants';
 
 
@@ -22,7 +22,40 @@ export default class IW extends Plugin {
       vimMode: false,
       defaultPriority: 30,
     };
+
     this.addSettingTab(new MyPluginSettingsTab(this.app, this));
+
+    this.addCommand({
+        id: 'open-queue-current-pane',
+        name: 'Open queue in current pane (IW)',
+
+        checkCallback: (checking: boolean) => {
+            let leaf = this.app.workspace.activeLeaf;
+            if (leaf) {
+                if (!checking) {
+                    this.openQueue(false);
+                }
+                return true;
+            }
+            return false;
+        }
+    });
+
+    this.addCommand({
+        id: 'open-queue-new-pane',
+        name: 'Open queue in new pane (IW)',
+
+        checkCallback: (checking: boolean) => {
+            let leaf = this.app.workspace.activeLeaf;
+            if (leaf) {
+                if (!checking) {
+                    this.openQueue(true);
+                }
+                return true;
+            }
+            return false;
+        }
+    });
 
     this.addCommand({
         id: 'current-iw-repetition',
@@ -87,6 +120,16 @@ export default class IW extends Plugin {
 			return false;
 		}
 	});
+  }
+
+  async openQueue(newLeaf: boolean) {
+      let queue = this.getQueueFile();
+      if (!queue){
+          console.debug("Failed to open queue because it does not exist");
+          return;
+      }
+      let linkText = this.app.metadataCache.fileToLinktext(queue, "");
+      await this.app.workspace.openLinkText(linkText, "", newLeaf);
   }
 
   async createIWQueueIfNotExists(rows: MarkdownTableRow[]){
