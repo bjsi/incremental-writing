@@ -1,26 +1,21 @@
 import { Plugin } from "obsidian";
-import { IW_QUEUE_FILE, IW_QUEUE_FOLDER } from './constants';
 import { Queue } from "./queue"
 import { LogTo } from "./logger"
-import { ReviewNoteModal, ReviewBlockModal } from "./modals"
-import { MyPluginSettings, MyPluginSettingsTab } from "./settings"
+import { ReviewNoteModal, ReviewBlockModal } from "./views/modals"
+import { IWSettings, DefaultSettings } from "./settings"
+import { IWSettingsTab } from "./views/settings-tab"
+import { StatusBar } from "./views/status-bar"
 
-
-// TODO: Default settings
 
 export default class IW extends Plugin {
  
-  settings: MyPluginSettings;
+  settings: IWSettings;
+  statusBar: StatusBar
   queue: Queue;
 
   async loadConfig(){
-    this.settings = (await this.loadData()) || {
-      vimMode: false,
-      defaultPriority: 30,
-      queuePath: IW_QUEUE_FOLDER + "/" + IW_QUEUE_FILE,
-    };
-
-    this.addSettingTab(new MyPluginSettingsTab(this.app, this));
+    this.settings = (await this.loadData()) || new DefaultSettings();
+    this.addSettingTab(new IWSettingsTab(this.app, this));
   }
 
   registerCommands() {
@@ -123,12 +118,12 @@ export default class IW extends Plugin {
   }
 
   async onload() {
-
     LogTo.Console("Loading...");
     await this.loadConfig();
     this.registerCommands();
-    this.queue = new Queue(this.app, this.settings);
-
+    this.statusBar = new StatusBar(this.addStatusBarItem());
+    this.statusBar.initStatusBar();
+    this.queue = new Queue(this.app, this.settings, this.statusBar);
   }
 
   onunload() {

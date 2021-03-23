@@ -1,5 +1,5 @@
 import { MarkdownView, Modal, SliderComponent, TextComponent, App, ButtonComponent } from "obsidian"
-import IW from "./main"
+import IW from "../main"
 
 abstract class ReviewModal extends Modal {
 
@@ -38,7 +38,8 @@ abstract class ReviewModal extends Modal {
             await this.addToOutstanding();
             this.close()
         });
-        this.inputNoteField.inputEl.focus();
+
+        // this.inputNoteField.inputEl.focus();
         this.inputNoteField.inputEl.addEventListener('keypress', async (keypressed) => {
             if (keypressed.key === 'Enter') {
                 await this.addToOutstanding()

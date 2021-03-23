@@ -2,38 +2,29 @@ import { MarkdownTable, MarkdownTableRow } from "./markdown"
 import { TFile,  App, MarkdownView } from "obsidian"
 import { LogTo } from "./logger"
 import { SimpleScheduler } from "./scheduler"
-import { MyPluginSettings } from "./settings"
+import { IWSettings } from "./settings"
+import { StatusBar } from "./views/status-bar"
 
 
 abstract class QueueBase {
 
-    protected defaultHeader: MarkdownTableRow[] = 
-        [
-        new MarkdownTableRow("Link", "Priority", "Notes"),
-        new MarkdownTableRow("-----", "-----", "-----"),
-    ];
+    defaultHeader = 
+`| Link | Priority | Notes |
+|------|----------|-------|`
 
-    defaultHeaderText(): string {
-        return this.defaultHeader.join("\n");
-    }
-
-    protected defaultTable: MarkdownTable
-
-    constructor() {
-        this.defaultTable = new MarkdownTable();
-        this.defaultTable.header = this.defaultHeader;
-    }
 }
 
 export class Queue extends QueueBase {
     
     app: App
     scheduler: SimpleScheduler
-    settings: MyPluginSettings
+    settings: IWSettings
+    statusBar: StatusBar
     
-    constructor(app: App, settings: MyPluginSettings) {
+    constructor(app: App, settings: IWSettings, statusBar: StatusBar) {
         super();
         this.app = app;
+        this.statusBar = statusBar;
         this.settings = settings;
         this.scheduler = new SimpleScheduler();
     }
@@ -51,18 +42,22 @@ export class Queue extends QueueBase {
     }
 
     getLinkWithoutBrackets(noteLink: string) {
-        return noteLink.substr(2, noteLink.link.length - 4);
+        return noteLink.substr(2, noteLink.length - 4);
     }
 
     async goToRep(current: boolean) {
         let text: string = await this.readQueue();
-        if (!text || text === this.defaultHeaderText()) {
+        if (!text) {
             LogTo.Debug("Failed to load repetition.", true);
             return;
         }
 
-        // TODO: check parse
         let table = new MarkdownTable(text);
+        if (!table.rows[0]){
+            LogTo.Debug("No more repetitions!", true);
+            return;
+        }
+
         if (current)
             this.goToCurrentRep(table);
         else
@@ -72,29 +67,43 @@ export class Queue extends QueueBase {
 
     async goToCurrentRep(table: MarkdownTable) {
         let currentRep = table.rows[0];
-        if (!currentRep){
-            LogTo.Debug("Failed to go to the current repetition.", true);
-            return;
-        }
-
         let linkPath = this.getLinkWithoutBrackets(currentRep.link)
-        LogTo.Console("Loading repetition: " + linkPath)
-        await this.app.workspace.openLinkText(linkPath, '', false, { active: true  });
+        await this.loadRep(linkPath);
+        this.updateStatusBar(table);
     }
 
     async nextRepetition(table: MarkdownTable) {
         let currentRep = table.rows[0];
-        if (table.rows.length == 1){
+        let nextRep = table.rows[1];
+        let linkPath = "";
+
+        if (currentRep && nextRep) {
+            linkPath = this.getLinkWithoutBrackets(nextRep.link);
+            table.rows = table.rows.slice(1);
+        }
+        else {
             table.rows.pop();
-            this.scheduler.schedule(table, currentRep);
-            LogTo.Console("No more repetitions.", true);
+            linkPath = this.getLinkWithoutBrackets(currentRep.link);
+        }
+
+        await this.loadRep(linkPath);
+        this.updateStatusBar(table);
+        await this.writeQueueTable(table);
+
+    }
+    
+    updateStatusBar(table: MarkdownTable){
+        this.statusBar.updateReps(table.rows.length);
+        this.statusBar.updateCurrentRep(table.rows[0]);
+    }
+
+    private async loadRep(linkPath: string){
+        if (!linkPath){
+            LogTo.Console("Failed to load repetition.", true);
             return;
         }
 
-        table.rows = table.rows.slice(1);
-        let nextRep = table.rows[0];
-        let linkPath = this.getLinkWithoutBrackets(nextRep.link);
-        LogTo.Console("Loading repetition: " + linkPath)
+        LogTo.Console("Loading repetition: " + linkPath, true)
         await this.app.workspace.openLinkText(linkPath, '', false, { active: true  });
     }
 
@@ -104,8 +113,6 @@ export class Queue extends QueueBase {
 
     async addToQueue(priority: string, notes: string, block?: string) {
 
-        // TODO: Create if not exists
-
         let text = await this.readQueue() ?? await this.createAndReadQueue();
         if (!text){
             LogTo.Console("Failed to add to queue. Failed to read queue. Failed to create queue.", true);
@@ -114,10 +121,8 @@ export class Queue extends QueueBase {
 
         let file: TFile = this.getActiveNoteFile();
         notes = notes.replace(/(\r\n|\n|\r)/gm, "");
-
-        // TODO Check table 
         let table = new MarkdownTable(text);
-
+ 
         if (block)
             this.addBlockToQueue(priority, notes, block, file, table);
         else
@@ -130,8 +135,10 @@ export class Queue extends QueueBase {
 
     async addNoteToQueue(priority: string, notes: string, activeNoteFile: TFile, table: MarkdownTable) {
         let noteLink = this.app.metadataCache.fileToLinktext(activeNoteFile, activeNoteFile.path, true);
-        table.addRow(new MarkdownTableRow(this.formatLink(noteLink), priority, notes));
-        this.writeQueueTable(table);
+        let row = new MarkdownTableRow(this.formatLink(noteLink), priority, notes);
+        table.addRow(row);
+        LogTo.Console("Added note to queue: " + noteLink);
+        await this.writeQueueTable(table);
     }
 
     async addBlockToQueue(priority: string, notes: string, block: string, activeNoteFile: TFile, table: MarkdownTable) {
@@ -151,7 +158,8 @@ export class Queue extends QueueBase {
 
         noteLink = noteLink + "#^" + lineBlockId;
         table.addRow(new MarkdownTableRow(this.formatLink(noteLink), priority, notes));
-        this.writeQueueTable(table);
+        LogTo.Console("Added block to queue: " + noteLink);
+        await this.writeQueueTable(table);
     }
 
   // TODO: Rewrite
@@ -204,19 +212,6 @@ export class Queue extends QueueBase {
       return await this.readQueue();
   }
 
-    trimChar(s: string, charToRemove: string) {
-      while(s.charAt(0)==charToRemove) {
-          s = s.substring(1);
-
-      }
-
-      while(s.charAt(s.length-1)==charToRemove) {
-          s = s.substring(0,s.length-1);
-      }
-
-      return s;
-  }
-
   queueFullPath() {
       let folder = this.settings.queueFolderPath;
       let file = this.settings.queueFilePath;
@@ -227,8 +222,7 @@ export class Queue extends QueueBase {
       LogTo.Debug("Creating default queue " + this.queueFullPath());
       let folder = this.settings.queueFolderPath;
       await this.app.vault.createFolder(folder);
-      let defaultQueue = this.defaultTable.toString();
-      return await this.app.vault.create(this.queueFullPath(), defaultQueue);
+      return await this.app.vault.create(this.queueFullPath(), this.defaultHeader);
   }
 
   getQueue(): TFile {
