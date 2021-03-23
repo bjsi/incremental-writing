@@ -120,7 +120,6 @@ export class ReviewBlockModal extends ReviewModal {
     onClose() {
         let { contentEl   } = this;
         contentEl.empty();
-
     }
 
 }

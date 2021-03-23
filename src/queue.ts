@@ -1,7 +1,7 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown"
 import { TFile,  App, MarkdownView } from "obsidian"
 import { LogTo } from "./logger"
-import { SimpleScheduler } from "./scheduler"
+import { SimpleScheduler, AFactorScheduler } from "./scheduler"
 import { IWSettings } from "./settings"
 import { StatusBar } from "./views/status-bar"
 
@@ -9,15 +9,15 @@ import { StatusBar } from "./views/status-bar"
 abstract class QueueBase {
 
     defaultHeader = 
-`| Link | Priority | Notes |
-|------|----------|-------|`
+`| Link | Priority | Notes | A-Factor | Interval | Last Rep |
+|------|----------|-------|----------|----------|----------|`
 
 }
 
 export class Queue extends QueueBase {
     
     app: App
-    scheduler: SimpleScheduler
+    scheduler: AFactorScheduler
     settings: IWSettings
     statusBar: StatusBar
     
@@ -26,7 +26,7 @@ export class Queue extends QueueBase {
         this.app = app;
         this.statusBar = statusBar;
         this.settings = settings;
-        this.scheduler = new SimpleScheduler();
+        this.scheduler = new AFactorScheduler();
     }
 
     async goToQueue(newLeaf: boolean) {
@@ -53,7 +53,10 @@ export class Queue extends QueueBase {
         }
 
         let table = new MarkdownTable(text);
-        if (!table.rows[0]){
+        table.sortByPriority();
+        table.sortByDue();
+
+        if (!table.rows || !table.rows[0].isDue()){
             LogTo.Debug("No more repetitions!", true);
             return;
         }
@@ -69,29 +72,40 @@ export class Queue extends QueueBase {
         let currentRep = table.rows[0];
         let linkPath = this.getLinkWithoutBrackets(currentRep.link)
         await this.loadRep(linkPath);
-        this.updateStatusBar(table);
+        // this.updateStatusBar;
     }
 
     async nextRepetition(table: MarkdownTable) {
         let currentRep = table.rows[0];
         let nextRep = table.rows[1];
-        let linkPath = "";
 
-        if (currentRep && nextRep) {
-            linkPath = this.getLinkWithoutBrackets(nextRep.link);
-            table.rows = table.rows.slice(1);
+        let repToLoad;
+
+        if (currentRep && nextRep ) {
+            table.rows = table.rows.slice(1)
+            repToLoad = nextRep
+            
         }
         else {
             table.rows.pop();
-            linkPath = this.getLinkWithoutBrackets(currentRep.link);
+            repToLoad = currentRep;
+        }
+        
+        this.scheduler.schedule(table, currentRep);
+
+        if (repToLoad.isDue()){
+            let linkPath = this.getLinkWithoutBrackets(nextRep.link);
+            await this.loadRep(linkPath);
+            // this.updateStatusBar(table);
+        }
+        else{
+            LogTo.Debug("No more repetitions!", true);
         }
 
-        await this.loadRep(linkPath);
-        this.updateStatusBar(table);
         await this.writeQueueTable(table);
-
     }
-    
+
+    // TODO: Don't use table, it will already have been updated
     updateStatusBar(table: MarkdownTable){
         this.statusBar.updateReps(table.rows.length);
         this.statusBar.updateCurrentRep(table.rows[0]);
@@ -142,6 +156,7 @@ export class Queue extends QueueBase {
     }
 
     async addBlockToQueue(priority: string, notes: string, block: string, activeNoteFile: TFile, table: MarkdownTable) {
+        LogTo.Debug("Add block to queue")
         let noteLink = this.app.metadataCache.fileToLinktext(activeNoteFile, activeNoteFile.path, true);
         let lineBlockId = this.getBlock(block, activeNoteFile);
 
@@ -195,7 +210,7 @@ export class Queue extends QueueBase {
 
   async writeQueueTable(table: MarkdownTable): Promise<void> {
     let queue = this.getQueue();
-    await this.app.vault.modify(queue, table.sortByPriority().toString()); // TODO: Remember to sort
+    await this.app.vault.modify(queue, table.toString()); // TODO: Remember to sort
   }
 
   async readQueue(): Promise<string> {

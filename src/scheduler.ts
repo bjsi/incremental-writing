@@ -1,11 +1,10 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown"
+import { DateUtils } from "./helpers/date-utils"
+import { LogTo } from "./logger"
 
 interface IScheduler {
     schedule(table: MarkdownTable, row: MarkdownTableRow): void
 }
-
-
-
 
 export class SimpleScheduler implements IScheduler {
 
@@ -18,7 +17,8 @@ export class SimpleScheduler implements IScheduler {
 export class AFactorScheduler implements IScheduler {
 
     schedule(table: MarkdownTable, row: MarkdownTableRow) {
-        row.nextRepDate
+        row.lastRepDate = DateUtils.formatDate(new Date(Date.now()));
+        row.interval = (Number(row.afactor) * Number(row.interval)).toString();
+        table.rows.push(row);
     }
-
 }
