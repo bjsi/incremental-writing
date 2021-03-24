@@ -52,6 +52,11 @@ export class Queue extends QueueBase {
         }
         
         let curRep = table.rows[0];
+        if (!curRep.isDue()) {
+            LogTo.Debug("No due repetition to dismiss.", true);
+            return
+        }
+
         table.rows = table.rows.slice(1);
         LogTo.Console("Dismissed repetition: " + this.getLinkWithoutBrackets(curRep.link), true);
         await this.writeQueueTable(table);

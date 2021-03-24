@@ -24,6 +24,5 @@
     "typescript": "4.1.3"
   },
   "dependencies": {
-    "obsidian-daily-notes-interface": "^0.7.8"
   }
 }
