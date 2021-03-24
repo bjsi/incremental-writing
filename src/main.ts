@@ -37,6 +37,22 @@ export default class IW extends Plugin {
     });
 
     this.addCommand({
+        id: 'dismiss-current-repetition',
+        name: 'Dismiss current repetition (IW)',
+
+        checkCallback: (checking: boolean) => {
+            let leaf = this.app.workspace.activeLeaf;
+            if (leaf) {
+                if (!checking) {
+                    this.queue.dismissCurrent();
+                }
+                return true;
+            }
+            return false;
+        }
+    });
+
+    this.addCommand({
         id: 'open-queue-new-pane',
         name: 'Open queue in new pane (IW)',
 

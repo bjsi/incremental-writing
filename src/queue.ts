@@ -1,7 +1,7 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown"
 import { TFile,  App, MarkdownView } from "obsidian"
 import { LogTo } from "./logger"
-import { SimpleScheduler, AFactorScheduler } from "./scheduler"
+import { AFactorScheduler } from "./scheduler"
 import { IWSettings } from "./settings"
 import { StatusBar } from "./views/status-bar"
 
@@ -41,14 +41,30 @@ export class Queue extends QueueBase {
         await this.app.workspace.openLinkText(linkText, "", newLeaf);
     }
 
+    async dismissCurrent() {
+
+        // Gets sorted in here
+        let table = await this.loadTable();
+
+        if (!table.rows){
+            LogTo.Debug("No repetitions!", true);
+            return;
+        }
+        
+        let curRep = table.rows[0];
+        table.rows = table.rows.slice(1);
+        LogTo.Console("Dismissed repetition: " + this.getLinkWithoutBrackets(curRep.link), true);
+        await this.writeQueueTable(table);
+    }
+
     getLinkWithoutBrackets(noteLink: string) {
         return noteLink.substr(2, noteLink.length - 4);
     }
 
-    async goToRep(current: boolean) {
+    async loadTable(): Promise<MarkdownTable> {
         let text: string = await this.readQueue();
         if (!text) {
-            LogTo.Debug("Failed to load repetition.", true);
+            LogTo.Debug("Failed to load queue table.", true);
             return;
         }
 
@@ -56,22 +72,20 @@ export class Queue extends QueueBase {
         table.sortByPriority();
         table.sortByDue();
 
-        if (!table.rows || !table.rows[0].isDue()){
-            LogTo.Debug("No more repetitions!", true);
-            return;
-        }
+        return table;
+    }
 
+    async goToRep(current: boolean) {
+        let table = await this.loadTable();
         if (current)
             this.goToCurrentRep(table);
         else
             this.nextRepetition(table);
-        
     }
 
     async goToCurrentRep(table: MarkdownTable) {
         let currentRep = table.rows[0];
-        let linkPath = this.getLinkWithoutBrackets(currentRep.link)
-        await this.loadRep(linkPath);
+        await this.loadRep(currentRep);
         // this.updateStatusBar;
     }
 
@@ -94,8 +108,7 @@ export class Queue extends QueueBase {
         this.scheduler.schedule(table, currentRep);
 
         if (repToLoad.isDue()){
-            let linkPath = this.getLinkWithoutBrackets(nextRep.link);
-            await this.loadRep(linkPath);
+            await this.loadRep(repToLoad);
             // this.updateStatusBar(table);
         }
         else{
@@ -111,18 +124,24 @@ export class Queue extends QueueBase {
         this.statusBar.updateCurrentRep(table.rows[0]);
     }
 
-    private async loadRep(linkPath: string){
-        if (!linkPath){
+    private async loadRep(repToLoad: MarkdownTableRow){
+        if (!repToLoad){
             LogTo.Console("Failed to load repetition.", true);
             return;
         }
 
-        LogTo.Console("Loading repetition: " + linkPath, true)
+        let linkPath = this.getLinkWithoutBrackets(repToLoad.link);
+        LogTo.Console("Loading repetition: " + linkPath, true);
         await this.app.workspace.openLinkText(linkPath, '', false, { active: true  });
     }
 
     getActiveNoteFile() {
 	  return (this.app.workspace.activeLeaf.view as MarkdownView).file;
+    }
+
+    isDuplicate(table: MarkdownTable, link: string): boolean {
+        let formattedLink = this.formatLink(link);
+        return (table.rows.some(r => r.link === formattedLink));
     }
 
     async addToQueue(priority: string, notes: string, block?: string) {
@@ -133,10 +152,11 @@ export class Queue extends QueueBase {
             return;
         }
 
-        let file: TFile = this.getActiveNoteFile();
         notes = notes.replace(/(\r\n|\n|\r)/gm, "");
+
+        let file: TFile = this.getActiveNoteFile();
         let table = new MarkdownTable(text);
- 
+
         if (block)
             this.addBlockToQueue(priority, notes, block, file, table);
         else
@@ -149,9 +169,15 @@ export class Queue extends QueueBase {
 
     async addNoteToQueue(priority: string, notes: string, activeNoteFile: TFile, table: MarkdownTable) {
         let noteLink = this.app.metadataCache.fileToLinktext(activeNoteFile, activeNoteFile.path, true);
+
+        if (this.isDuplicate(table, noteLink)){
+            LogTo.Console("Already in your queue!", true);
+            return;
+        }
+
         let row = new MarkdownTableRow(this.formatLink(noteLink), priority, notes);
         table.addRow(row);
-        LogTo.Console("Added note to queue: " + noteLink);
+        LogTo.Console("Added note to queue: " + noteLink, true);
         await this.writeQueueTable(table);
     }
 
@@ -172,8 +198,14 @@ export class Queue extends QueueBase {
         }
 
         noteLink = noteLink + "#^" + lineBlockId;
+
+        if (this.isDuplicate(table, noteLink)){
+            LogTo.Console("Already in your queue!", true);
+            return;
+        }
+
         table.addRow(new MarkdownTableRow(this.formatLink(noteLink), priority, notes));
-        LogTo.Console("Added block to queue: " + noteLink);
+        LogTo.Console("Added block to queue: " + noteLink, true);
         await this.writeQueueTable(table);
     }
 
