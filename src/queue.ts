@@ -24,7 +24,7 @@ export class Queue extends QueueBase {
     constructor(app: App, settings: IWSettings, statusBar: StatusBar) {
         super();
         this.app = app;
-        this.statusBar = statusBar;
+        // this.statusBar = statusBar;
         this.settings = settings;
         this.scheduler = new AFactorScheduler();
     }
@@ -180,7 +180,7 @@ export class Queue extends QueueBase {
             return;
         }
 
-        let row = new MarkdownTableRow(this.formatLink(noteLink), priority, notes);
+        let row = new MarkdownTableRow(this.formatLink(noteLink), priority, notes, this.settings.defaultAFactor.toString(), this.settings.defaultInterval.toString());
         table.addRow(row);
         LogTo.Console("Added note to queue: " + noteLink, true);
         await this.writeQueueTable(table);
@@ -209,7 +209,7 @@ export class Queue extends QueueBase {
             return;
         }
 
-        table.addRow(new MarkdownTableRow(this.formatLink(noteLink), priority, notes));
+        table.addRow(new MarkdownTableRow(this.formatLink(noteLink), priority, notes, this.settings.defaultAFactor.toString(), this.settings.defaultInterval.toString()));
         LogTo.Console("Added block to queue: " + noteLink, true);
         await this.writeQueueTable(table);
     }

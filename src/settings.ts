@@ -5,6 +5,8 @@ export interface IWSettings {
 	defaultPriority: number
     queueFilePath: string
     queueFolderPath: string
+    defaultAFactor: number
+    defaultInterval: number
 }
 
 export class DefaultSettings implements IWSettings {
@@ -12,4 +14,6 @@ export class DefaultSettings implements IWSettings {
       defaultPriority = 30;
       queueFilePath = IW_QUEUE_FILE;
       queueFolderPath = IW_QUEUE_FOLDER;
+      defaultAFactor = 2;
+      defaultInterval = 1;
 }

@@ -137,8 +137,8 @@ export default class IW extends Plugin {
     LogTo.Console("Loading...");
     await this.loadConfig();
     this.registerCommands();
-    this.statusBar = new StatusBar(this.addStatusBarItem());
-    this.statusBar.initStatusBar();
+    // this.statusBar = new StatusBar(this.addStatusBarItem());
+    // this.statusBar.initStatusBar();
     this.queue = new Queue(this.app, this.settings, this.statusBar);
   }
 

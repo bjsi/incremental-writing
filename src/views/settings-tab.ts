@@ -15,7 +15,7 @@ export class IWSettingsTab extends PluginSettingTab {
       const settings = this.plugin.settings;
       containerEl.empty();
 
-      containerEl.createEl('h2', {text: 'Settings for Incremental Writing'});
+      containerEl.createEl('h2', {text: 'Incremental Writing Settings'});
 
       new Setting(containerEl)
       .setName("Using Vim Mode?")
@@ -29,7 +29,7 @@ export class IWSettingsTab extends PluginSettingTab {
 
       new Setting(containerEl)
       .setName("Default Priority")
-      .setDesc("Default priority for new new repetitions.")
+      .setDesc("Default priority for new repetitions.")
       .addText((text) => {
           text.setValue(String(settings.defaultPriority)).onChange((value) => {
               let num = Number(value);
@@ -37,7 +37,33 @@ export class IWSettingsTab extends PluginSettingTab {
                   if (num < 0 || num > 100){
                       return;
                   }
-                  settings.defaultPriority = Number(value);
+                  settings.defaultPriority = num;
+                  this.plugin.saveData(settings);
+              }
+          });
+      });
+
+      new Setting(containerEl)
+      .setName("Default A-Factor")
+      .setDesc("Default A-Factor for new repetitions. The A-Factor is multiplied by the interval to find the next repetition interval.")
+      .addText((text) => {
+          text.setValue(String(settings.defaultAFactor)).onChange((value) => {
+              let num = Number(value);
+              if (!isNaN(num) && num > 0){
+                  settings.defaultAFactor = num;
+                  this.plugin.saveData(settings);
+              }
+          });
+      });
+    
+      new Setting(containerEl)
+      .setName("Default starting interval")
+      .setDesc("Default starting interval between repetitions.")
+      .addText((text) => {
+          text.setValue(String(settings.defaultInterval)).onChange((value) => {
+              let num = Number(value);
+              if (!isNaN(num) && num >= 0) {
+                  settings.defaultInterval = Math.round(num);
                   this.plugin.saveData(settings);
               }
           });
@@ -60,7 +86,7 @@ export class IWSettingsTab extends PluginSettingTab {
           text.setValue(String(settings.queueFolderPath)).onChange((value) => {
               settings.queueFolderPath = String(value);
               this.plugin.saveData(settings);
-          })
-      })
+          });
+      });
   }
 }
