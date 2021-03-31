@@ -1,5 +1,6 @@
-import { PluginSettingTab, App, Setting } from "obsidian"
+import { TFolder, normalizePath, PluginSettingTab, App, Setting } from "obsidian"
 import IW from "../main"
+import { FileSuggest, FolderSuggest } from "./file-suggest"
 
 export class IWSettingsTab extends PluginSettingTab {
 
@@ -17,15 +18,43 @@ export class IWSettingsTab extends PluginSettingTab {
 
       containerEl.createEl('h2', {text: 'Incremental Writing Settings'});
 
+      //
+      // Queue Folder
+      
       new Setting(containerEl)
-      .setName("Using Vim Mode?")
-      .setDesc("Toggle on if using vim mode.")
-      .addToggle((tc) => {
-          tc.setValue(settings.vimMode).onChange((value) => {
-              settings.vimMode = value;
+      .setName("Queue Folder")
+      .setDesc("The path to the folder where new queues should be created relative to the vault root.")
+      .addText((text) => {
+          text.setPlaceholder("Example: folder1/folder2")
+          new FolderSuggest(this.app, text.inputEl);
+          text.setValue(String(settings.queueFolderPath)).onChange((value) => {
+              settings.queueFolderPath = normalizePath(String(value));
               this.plugin.saveData(settings);
           });
-      });
+       })
+
+      //
+      // Default Queue
+
+      new Setting(containerEl)
+      .setName("Default Queue")
+      .setDesc("The name of the default queue file relative to the queue folder.")
+      .addText((text) => {
+
+          new FileSuggest(this.plugin, text.inputEl, () => this.app.vault.getAbstractFileByPath(settings.queueFolderPath) as TFolder);
+          text.setPlaceholder("Example: queue.md")
+          text.setValue(String(settings.queueFilePath)).onChange((value) => {
+              let file = normalizePath(String(value));
+              if (!file.endsWith(".md"))
+                  file += ".md";
+              settings.queueFilePath = file;
+              this.plugin.saveData(settings);
+          })
+
+      })
+
+      //
+      // Priority
 
       new Setting(containerEl)
       .setName("Default Priority")
@@ -66,26 +95,6 @@ export class IWSettingsTab extends PluginSettingTab {
                   settings.defaultInterval = Math.round(num);
                   this.plugin.saveData(settings);
               }
-          });
-      });
-
-      new Setting(containerEl)
-      .setName("Queue File")
-      .setDesc("The path to the queue file relative to the vault root.")
-      .addText((text) => { 
-          text.setValue(String(settings.queueFilePath)).onChange((value) => {
-              settings.queueFilePath = String(value);
-              this.plugin.saveData(settings);
-          })
-      });
-
-      new Setting(containerEl)
-      .setName("Queue Folder")
-      .setDesc("The path to the queue folder relative to the vault root")
-      .addText((text) => {
-          text.setValue(String(settings.queueFolderPath)).onChange((value) => {
-              settings.queueFolderPath = String(value);
-              this.plugin.saveData(settings);
           });
       });
   }

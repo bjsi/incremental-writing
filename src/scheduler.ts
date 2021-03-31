@@ -9,9 +9,8 @@ interface IScheduler {
 export class SimpleScheduler implements IScheduler {
 
     schedule(table: MarkdownTable, row: MarkdownTableRow) {
-        table.rows.push(row);
+        table.addRow(row);
     }
-
 }
 
 export class AFactorScheduler implements IScheduler {
@@ -19,6 +18,6 @@ export class AFactorScheduler implements IScheduler {
     schedule(table: MarkdownTable, row: MarkdownTableRow) {
         row.lastRepDate = DateUtils.formatDate(new Date(Date.now()));
         row.interval = (Number(row.afactor) * Number(row.interval)).toString();
-        table.rows.push(row);
+        table.addRow(row);
     }
 }

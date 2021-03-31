@@ -16,8 +16,8 @@ export class MarkdownTableUtils {
 
 export class MarkdownTable {
     
-    header: MarkdownTableRow[] = [];
-    rows: MarkdownTableRow[] = [];
+    private header: MarkdownTableRow[] = [];
+    private rows: MarkdownTableRow[] = [];
 
     constructor(text?: string) {
         if (text) {
@@ -28,7 +28,43 @@ export class MarkdownTable {
         }
     }
 
-    sortByDue() {
+    hasReps() {
+        return this.rows.length > 0;
+    }
+
+    currentRep() {
+        this.sortReps();
+        return this.rows[0]
+    }
+
+    nextRep() {
+        this.sortReps();
+        return this.rows[1];
+    }
+
+    removeCurrentRep() {
+        this.sortReps();
+        let removed;
+        if (this.rows.length === 1) {
+            removed = this.rows.pop();
+        } 
+        else if (this.rows.length > 1) {
+            removed = this.rows[0];
+            this.rows = this.rows.slice(1);
+        }
+        return removed;
+    }
+
+    sortReps() {
+        this.sortByPriority();
+        this.sortByDue();
+    }
+
+    getReps() {
+        return this.rows;
+    }
+
+    private sortByDue() {
         this.rows.sort((a, b) => {
             if (a.isDue() && !b.isDue())
                 return -1;
@@ -39,7 +75,7 @@ export class MarkdownTable {
         });
     }
 
-    sortByPriority() {
+    private sortByPriority() {
         this.rows.sort((a, b) => {
             let fst = +(a.priority);
             let snd = +(b.priority);
