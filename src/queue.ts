@@ -1,35 +1,28 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown"
 import { TFile } from "obsidian"
 import { LogTo } from "./logger"
-import { AFactorScheduler } from "./scheduler"
 import IW from "./main"
+import matter from 'gray-matter';
+import { GrayMatterFile } from 'gray-matter'
 
+export class Queue {
 
-abstract class QueueBase {
-    
-    scheduler: AFactorScheduler
-    filePath: string
+    queuePath: string
     plugin: IW
-    defaultHeader = 
-`| Link | Priority | Notes | A-Factor | Interval | Last Rep |
-|------|----------|-------|----------|----------|----------|`
-
-    constructor(plugin: IW, filePath: string){
-        this.plugin = plugin
-        this.filePath = filePath;
-        this.scheduler = new AFactorScheduler();
-    }
-}
-
-export class Queue extends QueueBase {
     
     constructor(plugin: IW, filePath: string) {
-        super(plugin, filePath);
+        this.plugin = plugin
+        this.queuePath = filePath;
+    }
+
+    async createTableIfNotExists() {
+        let data = new MarkdownTable(this.plugin).toString();
+        await this.plugin.files.createIfNotExists(this.queuePath, data);
     }
 
     async goToQueue(newLeaf: boolean) {
-        await this.plugin.files.createIfNotExists(this.filePath, this.defaultHeader);
-        await this.plugin.files.goTo(this.filePath, newLeaf);
+        await this.createTableIfNotExists();
+        await this.plugin.files.goTo(this.queuePath, newLeaf);
     }
 
     async dismissCurrent() {
@@ -46,8 +39,7 @@ export class Queue extends QueueBase {
         }
 
         table.removeCurrentRep();
-        let link = this.plugin.links.removeBrackets(curRep.link)
-        LogTo.Console("Dismissed repetition: " + link, true);
+        LogTo.Console("Dismissed repetition: " + curRep.link, true);
         await this.writeQueueTable(table);
     }
 
@@ -58,9 +50,14 @@ export class Queue extends QueueBase {
             return;
         }
 
-        let table = new MarkdownTable(text);
+        let fm = this.getFrontmatterString(text);
+        let table = new MarkdownTable(this.plugin, fm, text);
         table.sortReps();
         return table;
+    }
+
+    getFrontmatterString(text: string): GrayMatterFile<string> {
+        return matter(text);
     }
 
     async goToCurrentRep() {
@@ -96,7 +93,7 @@ export class Queue extends QueueBase {
             repToLoad = currentRep;
         }
         
-        this.scheduler.schedule(table, currentRep);
+        table.schedule(currentRep);
 
         if (repToLoad.isDue()){
             await this.loadRep(repToLoad);
@@ -121,46 +118,32 @@ export class Queue extends QueueBase {
             return;
         }
 
-        let linkPath = this.plugin.links.removeBrackets(repToLoad.link);
-        LogTo.Console("Loading repetition: " + linkPath, true);
-        await this.plugin.app.workspace.openLinkText(linkPath, '', false, { active: true  });
+        LogTo.Console("Loading repetition: " + repToLoad.link, true);
+        await this.plugin.app.workspace.openLinkText(repToLoad.link, '', false, { active: true  });
     }
 
-    isDuplicate(table: MarkdownTable, link: string): boolean {
-        let formattedLink = this.plugin.links.addBrackets(link);
-        return (table.getReps().some(r => r.link === formattedLink));
-    }
+    async addNotesToQueue(...rows: MarkdownTableRow[]) {
 
-    async addToQueue(priority: string, notes: string, date: string, file: TFile, block?: string) {
-
-        notes = notes.replace(/(\r\n|\n|\r|\|)/gm, "");
-        await this.plugin.files.createIfNotExists(this.filePath, this.defaultHeader);
+        await this.createTableIfNotExists();
         let table = await this.loadTable();
 
-        if (block)
-            this.addBlockToQueue(priority, notes, date, block, file, table);
-        else
-            this.addNoteToQueue(priority, notes, date,  file, table);
-    }
-
-    async addNoteToQueue(priority: string, notes: string, date: string, file: TFile, table: MarkdownTable) {
-
-        let noteLink = this.plugin.app.metadataCache.fileToLinktext(file, file.path, true);
-        if (this.isDuplicate(table, noteLink)){
-            LogTo.Console("Already in your queue!", true);
-            return;
+        for (let row of rows) {
+            if (table.hasRowWithLink(row.link)){
+                LogTo.Console(`Skipping ${row.link} because it is already in your queue!`);
+                continue;
+            }
+            table.addRow(row);
+            LogTo.Console("Added note to queue: " + row.link, true);
         }
 
-        let link = this.plugin.links.addBrackets(noteLink)
-        let row = new MarkdownTableRow(link, priority, notes, this.plugin.settings.defaultAFactor.toString(), this.plugin.settings.defaultInterval.toString(), date);
-        table.addRow(row);
-        LogTo.Console("Added note to queue: " + noteLink, true);
         await this.writeQueueTable(table);
     }
 
-    async addBlockToQueue(priority: string, notes: string, date: string, block: string, activeNoteFile: TFile, table: MarkdownTable) {
+    async addBlockToQueue(priority: number, notes: string, date: Date, block: string, activeNoteFile: TFile) {
+        await this.createTableIfNotExists();
+        let table = await this.loadTable();
         LogTo.Debug("Add block to queue")
-        let noteLink = this.plugin.app.metadataCache.fileToLinktext(activeNoteFile, activeNoteFile.path, true);
+        let link = this.plugin.app.metadataCache.fileToLinktext(activeNoteFile, activeNoteFile.path, true);
         let lineBlockId = this.plugin.blocks.getBlock(block, activeNoteFile);
 
         if (lineBlockId === "") { // The line is not already a block
@@ -172,26 +155,31 @@ export class Queue extends QueueBase {
             await this.plugin.app.vault.modify(activeNoteFile, newNoteText);
         }
 
-        noteLink = noteLink + "#^" + lineBlockId;
+        link = link + "#^" + lineBlockId;
 
-        if (this.isDuplicate(table, noteLink)){
+        if (table.hasRowWithLink(link)){
             LogTo.Console("Already in your queue!", true);
             return;
         }
 
-        let link = this.plugin.links.addBrackets(noteLink)
-        table.addRow(new MarkdownTableRow(link, priority, notes, this.plugin.settings.defaultAFactor.toString(), this.plugin.settings.defaultInterval.toString(), date));
-        LogTo.Console("Added block to queue: " + noteLink, true);
+        table.addRow(new MarkdownTableRow(link, priority, notes, 1, date));
+        LogTo.Console("Added block to queue: " + link, true);
         await this.writeQueueTable(table);
     }
 
+    getQueueAsTFile() {
+        return this.plugin.app.vault.getAbstractFileByPath(this.queuePath) as TFile;
+    }
+
   async writeQueueTable(table: MarkdownTable): Promise<void> {
-    let queue = this.plugin.app.vault.getAbstractFileByPath(this.filePath) as TFile;
-    await this.plugin.app.vault.modify(queue, table.toString());
+    let queue = this.getQueueAsTFile()
+    let data = table.toString();
+    table.sortReps();
+    await this.plugin.app.vault.modify(queue, data);
   }
 
   async readQueue(): Promise<string> {
-      let queue = this.plugin.app.vault.getAbstractFileByPath(this.filePath) as TFile;
+      let queue = this.getQueueAsTFile();
       try {
           return await this.plugin.app.vault.read(queue);
       }

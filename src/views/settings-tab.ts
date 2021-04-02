@@ -1,10 +1,13 @@
-import { TFolder, normalizePath, PluginSettingTab, App, Setting } from "obsidian"
+import { TFolder, SliderComponent, normalizePath, PluginSettingTab, App, Setting } from "obsidian"
 import IW from "../main"
 import { FileSuggest, FolderSuggest } from "./file-suggest"
+import { PriorityUtils } from "../helpers/priority-utils"
 
 export class IWSettingsTab extends PluginSettingTab {
 
   plugin: IW;
+  inputPriorityMin: SliderComponent
+  inputPriorityMax: SliderComponent
 
   constructor(app: App, plugin: IW) {
     super(app, plugin);
@@ -16,14 +19,14 @@ export class IWSettingsTab extends PluginSettingTab {
       const settings = this.plugin.settings;
       containerEl.empty();
 
-      containerEl.createEl('h2', {text: 'Incremental Writing Settings'});
+      containerEl.createEl('h3', {text: 'Incremental Writing Settings'});
 
       //
       // Queue Folder
       
       new Setting(containerEl)
       .setName("Queue Folder")
-      .setDesc("The path to the folder where new queues should be created relative to the vault root.")
+      .setDesc("The path to the folder where new incremental writing queues should be created. Relative to the vault root.")
       .addText((text) => {
           text.setPlaceholder("Example: folder1/folder2")
           new FolderSuggest(this.app, text.inputEl);
@@ -38,7 +41,7 @@ export class IWSettingsTab extends PluginSettingTab {
 
       new Setting(containerEl)
       .setName("Default Queue")
-      .setDesc("The name of the default queue file relative to the queue folder.")
+      .setDesc("The name of the default incremental writing queue file. Relative to the queue folder.")
       .addText((text) => {
 
           new FileSuggest(this.plugin, text.inputEl, () => this.app.vault.getAbstractFileByPath(settings.queueFolderPath) as TFolder);
@@ -50,49 +53,84 @@ export class IWSettingsTab extends PluginSettingTab {
               settings.queueFilePath = file;
               this.plugin.saveData(settings);
           })
-
       })
+
+      //
+      // Default Queue Type
+
+      new Setting(containerEl)
+        .setName("Default Scheduler")
+        .setDesc("The default scheduler to use for newly created queues.")
+        .addDropdown((comp) => {
+            comp.addOption("afactor", "A-Factor Scheduler")
+            comp.addOption("simple", "Simple Scheduler")
+            comp.setValue(String(settings.defaultQueueType)).onChange((value) => {
+                settings.defaultQueueType = String(value);
+                this.plugin.saveData(settings);
+            });
+        });
+
+      //
+      // Skip New Note Dialog
+
+      new Setting(containerEl)
+        .setName("Skip Add Note Dialog?")
+        .setDesc("Skip the add note dialog and use the defaults?")
+        .addToggle((comp) => {
+            comp.setValue(Boolean(settings.skipAddNoteWindow)).onChange((value) => {
+                settings.skipAddNoteWindow = Boolean(value);
+                this.plugin.saveData(settings);
+            })
+        })
 
       //
       // Priority
 
+      // Min
+
       new Setting(containerEl)
-      .setName("Default Priority")
-      .setDesc("Default priority for new repetitions.")
-      .addText((text) => {
-          text.setValue(String(settings.defaultPriority)).onChange((value) => {
-              let num = Number(value);
-              if (!isNaN(num)) {
-                  if (num < 0 || num > 100){
+      .setName("Default Minimum Priority")
+      .setDesc("Default minimum priority for new repetitions.")
+      .addSlider((comp) => {
+          this.inputPriorityMin = comp;
+          comp.setDynamicTooltip();
+          comp.setValue(Number(settings.defaultPriorityMin)).onChange((value) => {
+              if (this.inputPriorityMax) {
+                  let num = Number(value);
+                  if (!PriorityUtils.isValid(num)){
                       return;
                   }
-                  settings.defaultPriority = num;
+
+                  if (num > this.inputPriorityMax.getValue()) {
+                      this.inputPriorityMax.setValue(num);
+                  }
+
+                  settings.defaultPriorityMin = num;
                   this.plugin.saveData(settings);
               }
           });
       });
 
+      // Max
+
       new Setting(containerEl)
-      .setName("Default A-Factor")
-      .setDesc("Default A-Factor for new repetitions. The A-Factor is multiplied by the interval to find the next repetition interval.")
-      .addText((text) => {
-          text.setValue(String(settings.defaultAFactor)).onChange((value) => {
-              let num = Number(value);
-              if (!isNaN(num) && num > 0){
-                  settings.defaultAFactor = num;
-                  this.plugin.saveData(settings);
-              }
-          });
-      });
-    
-      new Setting(containerEl)
-      .setName("Default starting interval")
-      .setDesc("Default starting interval between repetitions.")
-      .addText((text) => {
-          text.setValue(String(settings.defaultInterval)).onChange((value) => {
-              let num = Number(value);
-              if (!isNaN(num) && num >= 0) {
-                  settings.defaultInterval = Math.round(num);
+      .setName("Default Maximum Priority")
+      .setDesc("Default maximum priority for new repetitions.")
+      .addSlider((comp) => {
+          this.inputPriorityMax = comp;
+          comp.setDynamicTooltip();
+          comp.setValue(Number(settings.defaultPriorityMax)).onChange((value) => {
+              if (this.inputPriorityMin) {
+                  let num = Number(value);
+                  if (!PriorityUtils.isValid(num)){
+                      return;
+                  }
+
+                  if (num < this.inputPriorityMin.getValue()) {
+                      this.inputPriorityMin.setValue(num);
+                  }
+
+                  settings.defaultPriorityMax = num;
                   this.plugin.saveData(settings);
               }
           });

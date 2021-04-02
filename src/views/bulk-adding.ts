@@ -1,4 +1,5 @@
 import { normalizePath, TFolder, TFile, SliderComponent, Notice, TextComponent, ButtonComponent } from "obsidian"
+import { PriorityUtils } from "../helpers/priority-utils"
 import { ModalBase } from "./modal-base"
 import IW from "../main"
 import { Queue } from "../queue"
@@ -6,6 +7,7 @@ import { HashSet } from "../hashset"
 import { FileSuggest } from "./file-suggest"
 import { DateUtils } from "../helpers/date-utils"
 import { throttle } from "../helpers/functools"
+import { MarkdownTableRow } from "../markdown"
 
 export class BulkAdderModal extends ModalBase {
 
@@ -46,7 +48,7 @@ export class BulkAdderModal extends ModalBase {
         if (await this.plugin.app.vault.adapter.exists(queuePath)) {
             let queue = new Queue(this.plugin, queuePath);
             let table = await queue.loadTable();
-            let alreadyAdded = table.getReps().map(r => this.plugin.links.removeBrackets(r.link) + ".md");
+            let alreadyAdded = table.getReps().map(r => r.link + ".md");
             for (let added of alreadyAdded) {
                 outstanding.add(added);
             }
@@ -142,41 +144,32 @@ export class BulkAdderModal extends ModalBase {
         this.contentEl.createEl("br");
 
         //
+        // Events
+
+        contentEl.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") {
+                this.addNotes();
+            }
+        })
+
+        //
         // Button
         
         let inputButton = new ButtonComponent(contentEl)
         .setButtonText("Add to IW Queue")
         .onClick(async () => {
-            
-            let priMin = Number(this.inputPriorityMin.getValue());
-            let priMax = Number(this.inputPriorityMax.getValue());
-
-            let dateMin = this.parseDate(this.inputFirstRepMin.getValue());
-            let dateMax = this.parseDate(this.inputFirstRepMax.getValue());
-            
-            if (this.prioritiesAreValid(priMin, priMax) && this.datesAreValid(dateMin, dateMax)) {
-                await this.addNotes(priMin, priMax, dateMin, dateMax);
-                this.close();
-                return;
-            }
-            else {
-                new Notice("Failed: invalid data!");
-            }
+            await this.addNotes();
+            this.close();
+            return;
         });
     }
 
-    datesAreValid(d1: string, d2: string){
-        let d1AsDate = new Date(d1);
-        let d2AsDate = new Date(d2);
-        return (d1AsDate && d2AsDate && (d1AsDate <= d2AsDate))
-    }
-
-    isValidPriority(pri: number): boolean {
-        return (!isNaN(pri) && (pri >= 0 && pri <= 100));
+    datesAreValid(d1: Date, d2: Date){
+        return (DateUtils.isValid(d1) && DateUtils.isValid(d2) && (d1 <= d2))
     }
 
     prioritiesAreValid(p1: number, p2: number) {
-        return this.isValidPriority(p1) && this.isValidPriority(p2) && (p1 < p2)
+        return PriorityUtils.isValid(p1) && PriorityUtils.isValid(p2) && (p1 < p2)
     }
 
     roundOff(num: number, places: number) {
@@ -184,23 +177,37 @@ export class BulkAdderModal extends ModalBase {
         return Math.round(num * x) / x;
     }
 
-    async addNotes(priMin: number, priMax: number, dateMin: string, dateMax: string) {
+    async addNotes() {
+        let priMin = Number(this.inputPriorityMin.getValue());
+        let priMax = Number(this.inputPriorityMax.getValue());
+        let dateMin = this.parseDate(this.inputFirstRepMin.getValue());
+        let dateMax = this.parseDate(this.inputFirstRepMax.getValue());
+
+        if (!this.prioritiesAreValid(priMin, priMax) || !this.datesAreValid(dateMin, dateMax)) {
+            new Notice("Failed: invalid data!");
+            this.close();
+            return;
+        }
         let priStep = (priMax - priMin) / this.toAdd.length;
         let curPriority = priMin;
-        let curDate = new Date(dateMin);
-        let dateDiff = DateUtils.dateDifference(new Date(dateMin), new Date(dateMax));
+        let curDate = dateMin;
+        let dateDiff = DateUtils.dateDifference(dateMin, dateMax);
         let numToAdd = this.toAdd.length > 0 ? this.toAdd.length : 1;
         let dateStep = dateDiff / numToAdd;
         let curStep = dateStep;
         
+        let queue = new Queue(this.plugin, this.getQueuePath());
+        let rows: MarkdownTableRow[] = [];
         for (let note of this.toAdd) {
             let file = this.plugin.app.vault.getAbstractFileByPath(note) as TFile;
-            let queue = new Queue(this.plugin, this.getQueuePath());
-            await queue.addToQueue(curPriority.toString(), "", DateUtils.formatDate(curDate), file)
+            let link = this.plugin.files.toLinkText(file);
+            rows.push(new MarkdownTableRow(link, curPriority, "", 1, curDate));
 
             curPriority = this.roundOff(curPriority + priStep, 2);
             curDate = DateUtils.addDays(new Date(dateMin), curStep);
             curStep += dateStep;
         }
+
+        await queue.addNotesToQueue(...rows);
     }
 }

@@ -33,15 +33,15 @@ export abstract class ModalBase extends Modal {
         return;
     }
 
-    parseDate(dateString: string): string {
+    parseDate(dateString: string): Date {
         let d1 = this.parseDateAsDate(dateString);
-        if (d1 instanceof Date && !isNaN(d1.valueOf()))
-            return DateUtils.formatDate(d1);
+        if (DateUtils.isValid(d1))
+            return d1;
 
         let d2 = this.parseDateAsNatural(dateString);
-        if (d2 instanceof Date && !isNaN(d2.valueOf()))
-            return DateUtils.formatDate(d2);
+        if (DateUtils.isValid(d2))
+            return d2;
 
-        return "1970-01-01";
+        return new Date("1970-01-01");
     }
 }

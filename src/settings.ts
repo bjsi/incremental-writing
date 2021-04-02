@@ -1,17 +1,17 @@
 export interface IWSettings {
-	defaultPriority: number
+	defaultPriorityMin: number
+	defaultPriorityMax: number
     queueFilePath: string
     queueFolderPath: string
-    defaultAFactor: number
-    defaultInterval: number
+    defaultQueueType: string
     skipAddNoteWindow: boolean
 }
 
 export class DefaultSettings implements IWSettings {
-      defaultPriority = 30;
+      defaultPriorityMin = 10;
+      defaultPriorityMax = 50;
       queueFolderPath = "IW-Queues"
       queueFilePath = "IW-Queue";
-      defaultAFactor = 2;
-      defaultInterval = 1;
+      defaultQueueType = "afactor";
       skipAddNoteWindow = false;
 }

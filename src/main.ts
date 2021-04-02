@@ -1,4 +1,4 @@
-import { TFolder, normalizePath, Plugin, TFile, ButtonComponent } from "obsidian";
+import { TFolder, Plugin, TFile, ButtonComponent } from "obsidian";
 import { Queue } from "./queue"
 import { LogTo } from "./logger"
 import { ReviewFileModal, ReviewNoteModal, ReviewBlockModal } from "./views/modals"
@@ -6,7 +6,7 @@ import { IWSettings, DefaultSettings } from "./settings"
 import { IWSettingsTab } from "./views/settings-tab"
 import { StatusBar } from "./views/status-bar"
 import { QueueLoadModal } from "./views/queue-modal"
-import { LinkUtils } from "./helpers/link-utils"
+import { LinkEx } from "./helpers/link-utils"
 import { FileUtils } from "./helpers/file-utils"
 import { BulkAdderModal } from "./views/bulk-adding"
 import { BlockUtils } from "./helpers/block-utils"
@@ -22,7 +22,7 @@ export default class IW extends Plugin {
   //
   // Utils
 
-  links: LinkUtils = new LinkUtils(this.app);
+  links: LinkEx = new LinkEx(this.app);
   files: FileUtils = new FileUtils(this.app);
   blocks: BlockUtils = new BlockUtils(this.app);
 
@@ -40,7 +40,7 @@ export default class IW extends Plugin {
     await this.loadConfig();
     this.registerCommands();
     this.subscribeToEvents();
-    this.createStatusBar();
+    // this.createStatusBar();
     this.queue = new Queue(this, this.getDefaultQueuePath());
   }
 
@@ -74,7 +74,7 @@ export default class IW extends Plugin {
       let files = await this.getSearchResults();
       let links = files.map(file => file.path);
       if (files) {
-          new BulkAdderModal(this, this.queue.filePath, links).open();
+          new BulkAdderModal(this, this.queue.queuePath, links).open();
       }
       else {
           LogTo.Console("No files to add.", true);
@@ -223,7 +223,7 @@ export default class IW extends Plugin {
                     let file = this.files.getActiveNoteFile();
                     if (file) {
                         let links = this.links.getLinksIn(file);
-                        new BulkAdderModal(this, this.queue.filePath, links).open();
+                        new BulkAdderModal(this, this.queue.queuePath, links).open();
                     }
                 }
                 return true;
@@ -284,7 +284,7 @@ export default class IW extends Plugin {
                                 .map(f => f.path);
 
                                 if (files){
-                                    new BulkAdderModal(this, this.queue.filePath, files).open();
+                                    new BulkAdderModal(this, this.queue.queuePath, files).open();
                                 }
                               else 
                                   LogTo.Console("Folder contains no files!", true);

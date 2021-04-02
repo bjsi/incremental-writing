@@ -1,31 +1,94 @@
 import { LogTo } from "./logger"
 import { DateUtils } from "./helpers/date-utils"
+import { LinkEx } from "./helpers/link-utils"
+import { PriorityUtils } from "./helpers/priority-utils"
+import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler"
+import IW from "./main"
+import { GrayMatterFile } from 'gray-matter'
 
-export class MarkdownTableUtils {
-
-    static parseRows(arr: string[]): MarkdownTableRow[] {
-        return arr.map((v, i, a) => this.parseRow(v))
-    }
-
-    static parseRow(text: string): MarkdownTableRow {
-        let arr = text.substr(1, text.length - 1).split("|").map(r => r.trim())
-        LogTo.Debug(arr.toString());
-        return new MarkdownTableRow(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-    }
-}
 
 export class MarkdownTable {
-    
-    private header: MarkdownTableRow[] = [];
-    private rows: MarkdownTableRow[] = [];
+ 
+    plugin: IW
+    scheduler: Scheduler
+    private header = 
+`| Link | Priority | Notes | Interval | Next Rep |
+|------|----------|-------|---------|----------|`
+    rows: MarkdownTableRow[] = [];
 
-    constructor(text?: string) {
+    // TODO: just pass the gray matter object, replace text with contents.
+    constructor(plugin: IW, frontMatter?: GrayMatterFile<string>, text?: string) {
+        this.plugin = plugin;
+        this.scheduler = this.createScheduler(frontMatter);
         if (text) {
             text = text.trim();
             let split = text.split("\n");
-            this.header = MarkdownTableUtils.parseRows(split.slice(0, 2));
-            this.rows = MarkdownTableUtils.parseRows(split.slice(2));
+            let idx = this.findYamlEnd(split);
+            if (idx !== -1)
+                // line after yaml + header
+                this.rows = this.parseRows(split.slice(idx + 1 + 2)); 
         }
+    }
+
+    hasRowWithLink(link: string) {
+        link = LinkEx.removeBrackets(link);
+        return (this.rows.some(r => r.link === link));
+    }
+
+    schedule(rep: MarkdownTableRow) {
+        this.scheduler.schedule(this, rep);
+    }
+
+    findYamlEnd(split: string[]) {
+        let ct = 0;
+        let idx = split.findIndex((value) => { 
+            if (value === "---") {
+                if (ct === 1) {
+                    return true;
+                }
+                ct += 1;
+                return false;
+            }});
+
+        console.log("yaml end: " + idx.toString());
+
+        return idx;
+    }
+
+    private createScheduler(frontMatter: GrayMatterFile<string>): Scheduler {
+        let scheduler: Scheduler
+
+        // Default
+        if (this.plugin.settings.defaultQueueType === "afactor") {
+            scheduler = new AFactorScheduler();
+        }
+        else if (this.plugin.settings.defaultQueueType === "simple"){
+            scheduler = new SimpleScheduler();
+        }
+
+        // Specified in YAML
+        if (frontMatter) {
+            let schedulerName = frontMatter.data["scheduler"];
+            if (schedulerName && schedulerName === "simple"){
+                scheduler = new SimpleScheduler();
+            }
+            else if (schedulerName && schedulerName === "afactor") {
+                let afactor = Number(frontMatter.data["afactor"]);
+                let interval = Number(frontMatter.data["interval"]);
+                scheduler = new AFactorScheduler(afactor, interval);
+            }
+        }
+        return scheduler;
+    }
+
+    parseRows(arr: string[]): MarkdownTableRow[] {
+        return arr.map(v => this.parseRow(v))
+    }
+
+    parseRow(text: string): MarkdownTableRow {
+        let arr = text.substr(1, text.length - 1).split("|").map(r => r.trim())
+        LogTo.Debug(arr.toString());
+        return new MarkdownTableRow(arr[0], Number(arr[1]), arr[2], Number(arr[3]), new Date(arr[4]));
     }
 
     hasReps() {
@@ -56,8 +119,13 @@ export class MarkdownTable {
     }
 
     sortReps() {
-        this.sortByPriority();
-        this.sortByDue();
+        if (this.scheduler instanceof SimpleScheduler) {
+            this.sortByPriority();
+        }
+        else if (this.scheduler instanceof AFactorScheduler) {
+            this.sortByPriority();
+            this.sortByDue();
+        }
     }
 
     getReps() {
@@ -98,7 +166,8 @@ export class MarkdownTable {
     }
 
     toString() {
-        let table = this.header.join("\n");
+        let table = this.scheduler.toString() + "\n";
+        table += this.header;
         if (this.rows) {
             table += "\n" + this.rows.join("\n");
         }
@@ -109,34 +178,28 @@ export class MarkdownTable {
 export class MarkdownTableRow {
 
     link: string
-    priority: string
+    priority: number
     notes: string
-    afactor: string
-    interval: string
-    lastRepDate: string
+    interval: number
+    nextRepDate: Date
 
-    constructor(link: string, priority: string, notes: string, afactor: string = "2", interval: string = "1", lastRepDate: string = "1970-01-01"){
-        this.link = link;
-        this.priority = priority;
-        this.notes = notes;
-        this.afactor = afactor;
-        this.interval = interval;
-        this.lastRepDate = lastRepDate;
+    constructor(link: string, priority: number, notes: string, interval: number = 1, nextRepDate: Date = new Date("1970-01-01")){
+        this.link = LinkEx.removeBrackets(link);
+        this.priority = PriorityUtils.isValid(priority) ? priority : 30;
+        this.notes = notes.replace(/(\r\n|\n|\r|\|)/gm, "");
+        this.interval = interval > 0 ? interval : 1;
+        this.nextRepDate = DateUtils.isValid(nextRepDate) ? nextRepDate : new Date("1970-01-01");
     }
 
     isDue(): boolean {
-        let lastDate = new Date(this.lastRepDate);
-        let dueDate = DateUtils.addDays(lastDate, Number(this.interval));
-        if (new Date(Date.now()) >= dueDate)
+        if (new Date(Date.now()) >= this.nextRepDate)
             return true;
         return false;
     }
 
     toString() {
-        let text = `| ${this.link} | ${this.priority} | ${this.notes} | ${this.afactor} | ${this.interval} | ${this.lastRepDate} |`
-        if (text.contains("undefined"))
-            throw new Error("table contains undefined");
-
-        return text;
+        let date = DateUtils.formatDate(this.nextRepDate);
+        let link = LinkEx.addBrackets(this.link);
+        return `| ${link} | ${this.priority} | ${this.notes} | ${this.interval} | ${date} |`;
     }
 }

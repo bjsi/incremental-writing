@@ -20,6 +20,10 @@ export class FileUtils extends ObsidianUtilsBase {
         }
     }
 
+    toLinkText(file: TFile) {
+        return this.app.metadataCache.fileToLinktext(file, file.path, true);
+    }
+
     getParentOfNormalized(normalizedPath: string) {
         let pathSplit = normalizedPath.split('/');
         return pathSplit.slice(0, pathSplit.length - 1).join('/');

@@ -1,13 +1,13 @@
 import { App, TFile } from "obsidian"
 import { ObsidianUtilsBase } from "./obsidian-utils-base"
 
-export class LinkUtils extends ObsidianUtilsBase {
+export class LinkEx extends ObsidianUtilsBase {
     
     constructor(app: App) {
         super(app)
     }
 
-    addBrackets(link: string) {
+    static addBrackets(link: string) {
         if (!link.startsWith("[["))
             link = "[[" + link;
 
@@ -22,7 +22,7 @@ export class LinkUtils extends ObsidianUtilsBase {
         return this.app.metadataCache.fileToLinktext(file, "");
     }
 
-    removeBrackets(link: string) {
+    static removeBrackets(link: string) {
         if (link.startsWith("[["))
             link = link.substr(2)
 

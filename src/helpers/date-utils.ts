@@ -19,6 +19,10 @@ export class DateUtils {
         return [year, month, day].join('-');
     }
 
+    static isValid(date: Date) {
+        return (date instanceof Date && !isNaN(date.valueOf()))
+    }
+
     static dateDifference(date1: Date, date2: Date) {
         const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
         // @ts-ignore

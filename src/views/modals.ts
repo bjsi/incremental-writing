@@ -4,6 +4,8 @@ import { ModalBase } from "./modal-base"
 import { LogTo } from "../logger"
 import { FileSuggest } from "./file-suggest"
 import { Queue } from "../queue"
+import { PriorityUtils } from "../helpers/priority-utils"
+import { MarkdownTableRow } from "../markdown"
 
 abstract class ReviewModal extends ModalBase {
 
@@ -49,10 +51,12 @@ abstract class ReviewModal extends ModalBase {
         //
         // Priority
 
+        let pMin = this.plugin.settings.defaultPriorityMin;
+        let pMax = this.plugin.settings.defaultPriorityMax;
         contentEl.appendText("Priority: ");
         this.inputSlider = new SliderComponent(contentEl)
             .setLimits(0, 100, 1)
-            .setValue(this.plugin.settings.defaultPriority)
+            .setValue(PriorityUtils.getPriorityBetween(pMin, pMax))
             .setDynamicTooltip();
         contentEl.createEl("br");
 
@@ -102,8 +106,8 @@ abstract class ReviewModal extends ModalBase {
         });
     }
 
-    getPriority(): string {
-        return this.inputSlider.getValue().toString();
+    getPriority(): number {
+        return this.inputSlider.getValue();
     }
 
     getNotes() {
@@ -140,7 +144,9 @@ export class ReviewNoteModal extends ReviewModal {
         
         let queue = new Queue(this.plugin, this.getQueuePath());
         let file = this.plugin.files.getActiveNoteFile();
-        await queue.addToQueue(this.getPriority(), this.getNotes(), date, file);
+        let link = this.plugin.files.toLinkText(file);
+        let row = new MarkdownTableRow(link, this.getPriority(), this.getNotes(), 1, date)
+        await queue.addNotesToQueue(row);
     }
 }
 
@@ -163,10 +169,12 @@ export class ReviewFileModal extends ReviewModal {
             LogTo.Console("Failed to parse initial repetition date!");
             return;
         }
-        
+
         let queue = new Queue(this.plugin, this.getQueuePath());
-        let file = this.plugin.app.vault.getAbstractFileByPath(this.filePath) as TFile;
-        await queue.addToQueue(this.getPriority(), this.getNotes(), date, file)
+        let file = this.plugin.files.getActiveNoteFile();
+        let link = this.plugin.files.toLinkText(file);
+        let row = new MarkdownTableRow(link, this.getPriority(), this.getNotes(), 1, date)
+        await queue.addNotesToQueue(row);
     }
 }
 
@@ -197,6 +205,6 @@ export class ReviewBlockModal extends ReviewModal {
         
         let queue = new Queue(this.plugin, this.getQueuePath());
         let file = this.plugin.files.getActiveNoteFile();
-        await queue.addToQueue(this.getPriority(), this.getNotes(), date, file, this.getCurrentLineText());
+        await queue.addBlockToQueue(this.getPriority(), this.getNotes(), date, this.getCurrentLineText(), file);
     }
 }
