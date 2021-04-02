@@ -27,7 +27,7 @@ export class Queue {
 
     async dismissCurrent() {
         let table = await this.loadTable();
-        if (!table.hasReps()){
+        if (table || !table.hasReps()){
             LogTo.Debug("No repetitions!", true);
             return;
         }
@@ -62,19 +62,23 @@ export class Queue {
 
     async goToCurrentRep() {
         let table = await this.loadTable();
-        if (!table.hasReps()) {
+        if (!table || !table.hasReps()) {
             LogTo.Console("No more repetitions!", true);
             return;
         }
 
         let currentRep = table.currentRep()
-        await this.loadRep(currentRep);
-        // this.updateStatusBar;
+        if (currentRep.isDue()) {
+            await this.loadRep(currentRep);
+        }
+        else {
+            LogTo.Console("No more repetitions!", true);
+        }
     }
 
     async nextRepetition() {
         let table = await this.loadTable();
-        if (!table.hasReps()) {
+        if (!table || !table.hasReps()) {
             LogTo.Console("No more repetitions!", true);
             return;
         }
