@@ -1,8 +1,6 @@
-## Obsidian Incremental Writing Plugin
+# Obsidian Incremental Writing Plugin
 
-## How to install the plugin
-
-Go to releases. Download the zip file. Unzip into your obsidian plugins directory.
+This plugin allows you to do incremental writing in Obsidian. Notes and blocks can be added to queues that will schedule reviews of your writing over time.
 
 ## Using the plugin
 
