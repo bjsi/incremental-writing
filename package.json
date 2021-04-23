@@ -1,7 +1,7 @@
 {
   "name": "obsidian-incremental-writing",
   "author": "Jamesb <experimentallearning0@gmail.com",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Incrementally review notes and blocks over time.",
   "main": "main.js",
   "scripts": {
