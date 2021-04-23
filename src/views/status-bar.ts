@@ -1,4 +1,6 @@
 import { MarkdownTableRow } from "../markdown"
+import IW from "../main"
+import { TFile } from "obsidian"
 
 export class StatusBar {
 
@@ -9,8 +11,11 @@ export class StatusBar {
     repText: HTMLSpanElement;
     queueText: HTMLSpanElement;
 
-    constructor(statusBar:HTMLElement) {
+    plugin: IW
+
+    constructor(statusBar:HTMLElement, plugin: IW) {
         this.statusBar = statusBar;
+        this.plugin = plugin;
     }
 
     initStatusBar() {
@@ -26,14 +31,24 @@ export class StatusBar {
     }
 
     updateCurrentQueue(queue: string) {
-        if (queue)
-            this.queueText.innerText = "IW Queue: " + queue;
+        if (queue){
+            let name = queue.split('/')[1];
+            if (name.endsWith(".md"))
+                name = name.substr(0, name.length - 3);
+            this.queueText.innerText = "IW Queue: " + name;
+        }
     }
 
     updateCurrentRep(row: MarkdownTableRow) {
-        if (row)
-            this.repText.innerText = "IW Rep: " + row.link;
-        else
-            this.repText.innerText = "Current Rep: None."
+        if (row){
+            let link = row.link;
+            let file = this.plugin.app.vault.getAbstractFileByPath(link + ".md") as TFile;
+            if (file){
+                this.repText.innerText = "IW Rep: " + file.basename;
+                return;
+            }
+        }
+
+        this.repText.innerText = "Current Rep: None."
     }
 }

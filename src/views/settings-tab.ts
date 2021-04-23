@@ -47,6 +47,9 @@ export class IWSettingsTab extends PluginSettingTab {
           new FileSuggest(this.plugin, text.inputEl, () => this.app.vault.getAbstractFileByPath(settings.queueFolderPath) as TFolder);
           text.setPlaceholder("Example: queue.md")
           text.setValue(String(settings.queueFilePath)).onChange((value) => {
+              let str = String(value);
+              if (!str)
+                  return;
               let file = normalizePath(String(value));
               if (!file.endsWith(".md"))
                   file += ".md";
@@ -73,15 +76,15 @@ export class IWSettingsTab extends PluginSettingTab {
       //
       // Skip New Note Dialog
 
-      new Setting(containerEl)
-        .setName("Skip Add Note Dialog?")
-        .setDesc("Skip the add note dialog and use the defaults?")
-        .addToggle((comp) => {
-            comp.setValue(Boolean(settings.skipAddNoteWindow)).onChange((value) => {
-                settings.skipAddNoteWindow = Boolean(value);
-                this.plugin.saveData(settings);
-            })
-        })
+      // new Setting(containerEl)
+      //   .setName("Skip Add Note Dialog?")
+      //   .setDesc("Skip the add note dialog and use the defaults?")
+      //   .addToggle((comp) => {
+      //       comp.setValue(Boolean(settings.skipAddNoteWindow)).onChange((value) => {
+      //           settings.skipAddNoteWindow = Boolean(value);
+      //           this.plugin.saveData(settings);
+      //       })
+      //   })
 
       //
       // Priority

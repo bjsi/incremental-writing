@@ -171,7 +171,11 @@ export class ReviewFileModal extends ReviewModal {
         }
 
         let queue = new Queue(this.plugin, this.getQueuePath());
-        let file = this.plugin.files.getActiveNoteFile();
+        let file = this.plugin.app.vault.getAbstractFileByPath(this.filePath) as TFile;
+        if (!file){
+            LogTo.Console("Failed to add to outstanding because file was null", true);
+            return;
+        }
         let link = this.plugin.files.toLinkText(file);
         let row = new MarkdownTableRow(link, this.getPriority(), this.getNotes(), 1, date)
         await queue.addNotesToQueue(row);

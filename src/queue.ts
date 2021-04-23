@@ -27,7 +27,7 @@ export class Queue {
 
     async dismissCurrent() {
         let table = await this.loadTable();
-        if (table || !table.hasReps()){
+        if (!table || !table.hasReps()){
             LogTo.Debug("No repetitions!", true);
             return;
         }
@@ -130,6 +130,12 @@ export class Queue {
                 LogTo.Console(`Skipping ${row.link} because it is already in your queue!`);
                 continue;
             }
+
+            if (row.link.contains("|")) {
+                LogTo.Console(`Skipping ${row.link} because it contains a pipe character.`)
+                continue;
+            }
+
             table.addRow(row);
             LogTo.Console("Added note to queue: " + row.link, true);
         }
@@ -157,6 +163,12 @@ export class Queue {
 
         if (table.hasRowWithLink(link)){
             LogTo.Console("Already in your queue!", true);
+            return;
+        }
+
+
+        if (link.contains("|")) {
+            LogTo.Console(`Failed to add ${link} because it contains a pipe character.`, true)
             return;
         }
 

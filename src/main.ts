@@ -206,7 +206,7 @@ export default class IW extends Plugin {
   }
 
   createStatusBar() {
-    this.statusBar = new StatusBar(this.addStatusBarItem());
+    this.statusBar = new StatusBar(this.addStatusBarItem(), this);
     this.statusBar.initStatusBar();
   }
 

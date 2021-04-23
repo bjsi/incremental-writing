@@ -19,6 +19,7 @@ export class BulkAdderModal extends ModalBase {
 
     //
     // Queue
+
     inputQueueField: TextComponent
 
     // 
@@ -49,7 +50,7 @@ export class BulkAdderModal extends ModalBase {
         if (await this.plugin.app.vault.adapter.exists(queuePath)) {
             let queue = new Queue(this.plugin, queuePath);
             let table = await queue.loadTable();
-            let alreadyAdded = table.getReps().map(r => r.link + ".md");
+            let alreadyAdded = table.getReps().map(r => normalizePath(r.link + ".md"));
             for (let added of alreadyAdded) {
                 outstanding.add(added);
             }

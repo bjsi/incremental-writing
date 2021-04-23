@@ -1,4 +1,3 @@
-import { LogTo } from "./logger"
 import { DateUtils } from "./helpers/date-utils"
 import { LinkEx } from "./helpers/link-utils"
 import { PriorityUtils } from "./helpers/priority-utils"
@@ -50,8 +49,6 @@ export class MarkdownTable {
                 return false;
             }});
 
-        console.log("yaml end: " + idx.toString());
-
         return idx;
     }
 
@@ -87,7 +84,6 @@ export class MarkdownTable {
 
     parseRow(text: string): MarkdownTableRow {
         let arr = text.substr(1, text.length - 1).split("|").map(r => r.trim())
-        LogTo.Debug(arr.toString());
         return new MarkdownTableRow(arr[0], Number(arr[1]), arr[2], Number(arr[3]), new Date(arr[4]));
     }
 
