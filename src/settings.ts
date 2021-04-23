@@ -11,7 +11,7 @@ export class DefaultSettings implements IWSettings {
       defaultPriorityMin = 10;
       defaultPriorityMax = 50;
       queueFolderPath = "IW-Queues"
-      queueFilePath = "IW-Queue";
+      queueFilePath = "IW-Queue.md";
       defaultQueueType = "afactor";
       skipAddNoteWindow = false;
 }
