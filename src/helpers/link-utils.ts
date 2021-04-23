@@ -1,5 +1,6 @@
 import { App, TFile } from "obsidian"
 import { ObsidianUtilsBase } from "./obsidian-utils-base"
+import { getLinkpath, normalizePath } from "obsidian"
 
 export class LinkEx extends ObsidianUtilsBase {
     
@@ -34,6 +35,11 @@ export class LinkEx extends ObsidianUtilsBase {
 
     getLinksIn(file: TFile): string[] {
         let links = this.app.metadataCache.getFileCache(file).links;
-        return links.map(l => l.link);
+        if (links)
+            return links
+                .map(l => getLinkpath(l.link))
+                .map(l => this.app.metadataCache.getFirstLinkpathDest(l, file.path))
+                .map(f => f.path)
+        return []
     }
 }

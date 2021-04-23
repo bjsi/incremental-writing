@@ -40,8 +40,10 @@ export default class IW extends Plugin {
     await this.loadConfig();
     this.registerCommands();
     this.subscribeToEvents();
-    // this.createStatusBar();
-    this.queue = new Queue(this, this.getDefaultQueuePath());
+    this.createStatusBar();
+    let queuePath = this.getDefaultQueuePath();
+    this.queue = new Queue(this, queuePath);
+    this.statusBar.updateCurrentQueue(queuePath)
   }
 
   async getFound() {
@@ -73,11 +75,22 @@ export default class IW extends Plugin {
   async addSearchResultsToQueue() {
       let files = await this.getSearchResults();
       let links = files.map(file => file.path);
-      if (files) {
+      if (links) {
           new BulkAdderModal(this, this.queue.queuePath, links).open();
       }
       else {
           LogTo.Console("No files to add.", true);
+      }
+  }
+
+  loadQueue(filePath: string) {
+      if (filePath) {
+          this.statusBar.updateCurrentQueue(filePath);
+          this.queue = new Queue(this, filePath);
+          LogTo.Console("Loaded Queue: " + filePath, true);
+      }
+      else {
+          LogTo.Console("Failed to load queue: " + filePath, true);
       }
   }
 
@@ -89,31 +102,15 @@ export default class IW extends Plugin {
     this.addCommand({
         id: 'open-queue-current-pane',
         name: 'Open queue in current pane.',
-        checkCallback: (checking: boolean) => {
-            let leaf = this.app.workspace.activeLeaf;
-            if (leaf) {
-                if (!checking) {
-                    this.queue.goToQueue(false);
-                }
-                return true;
-            }
-            return false;
-        }
+        callback: () => this.queue.goToQueue(false),
+        hotkeys: [],
     });
 
     this.addCommand({
         id: 'open-queue-new-pane',
         name: 'Open queue in new pane.',
-        checkCallback: (checking: boolean) => {
-            let leaf = this.app.workspace.activeLeaf;
-            if (leaf) {
-                if (!checking) {
-                    this.queue.goToQueue(true);
-                }
-                return true;
-            }
-            return false;
-        }
+        callback: () => this.queue.goToQueue(true),
+        hotkeys: [],
     });
 
     //
@@ -122,47 +119,22 @@ export default class IW extends Plugin {
     this.addCommand({
         id: 'current-iw-repetition',
         name: 'Current repetition.',
-		checkCallback: (checking: boolean) => {
-            let leaf = this.app.workspace.activeLeaf;
-            if (leaf) {
-                if (!checking) {
-                    this.queue.goToCurrentRep();
-                }
-                return true;
-            }
-            return false;
-        }
+		callback: () => this.queue.goToCurrentRep(),
+        hotkeys: []
     });
 
     this.addCommand({
         id: 'dismiss-current-repetition',
         name: 'Dismiss current repetition.',
-        checkCallback: (checking: boolean) => {
-            let leaf = this.app.workspace.activeLeaf;
-            if (leaf) {
-                if (!checking) {
-                    this.queue.dismissCurrent();
-                }
-                return true;
-            }
-            return false;
-        }
+        callback: () => this.queue.dismissCurrent(),
+        hotkeys: []
     });
-
 
 	this.addCommand({
 		id: 'next-iw-repetition',
 		name: 'Next repetition.',
-		checkCallback: (checking: boolean) => {
-            let leaf = this.app.workspace.activeLeaf;
-            if (leaf) {
-                if (!checking) {
-                    this.queue.nextRepetition();
-                }
-                return true;
-            }
-            return false;
-        }
+		callback: () => this.queue.nextRepetition(),
+        hotkeys: []
 	});
     
     // 
@@ -171,65 +143,50 @@ export default class IW extends Plugin {
 	this.addCommand({
 		id: 'note-add-iw-queue',
 		name: 'Add note to queue.',
-		checkCallback: (checking: boolean) => {
-			let leaf = this.app.workspace.activeLeaf;
-			if (leaf) {
-				if (!checking) {
-                        new ReviewNoteModal(this).open();
-				}
-				return true;
-			}
-			return false;
-		}
+		callback: () => new ReviewNoteModal(this).open()
 	});
 
     this.addCommand({
         id: 'fuzzy-note-add-iw-queue',
         name: 'Add note to queue through a fuzzy finder',
-		checkCallback: (checking: boolean) => {
-			let leaf = this.app.workspace.activeLeaf;
-			if (leaf) {
-				if (!checking) {
-					new FuzzyNoteAdder(this).open();
-				}
-				return true;
-			}
-			return false;
-		}
-    })
+		callback: () => {
+            let leaf = this.app.workspace.activeLeaf;
+            if (leaf) {
+                new FuzzyNoteAdder(this).open();
+            }
+        },
+        hotkeys: []
+    });
 
 	this.addCommand({
 		id: 'block-add-iw-queue',
 		name: 'Add block to queue.',
-		checkCallback: (checking: boolean) => {
-			let leaf = this.app.workspace.activeLeaf;
-			if (leaf) {
-				if (!checking) {
-					new ReviewBlockModal(this).open();
-				}
-				return true;
-			}
-			return false;
-		}
+		callback: () => {
+            let leaf = this.app.workspace.activeLeaf;
+            if (leaf) {
+                new ReviewBlockModal(this).open();
+            }
+        },
+        hotkeys: []
 	});
 
     this.addCommand({
         id: 'add-links-within-note',
         name: 'Add links within note to queue.',
-        checkCallback: (checking: boolean) => {
+        callback: () => {
             let leaf = this.app.workspace.activeLeaf;
             if (leaf) {
-                if (!checking) {
-                    let file = this.files.getActiveNoteFile();
-                    if (file) {
-                        let links = this.links.getLinksIn(file);
+                let file = this.files.getActiveNoteFile();
+                if (file) {
+                    let links = this.links.getLinksIn(file);
+                    if (links && links.length)
                         new BulkAdderModal(this, this.queue.queuePath, links).open();
-                    }
+                    else
+                        LogTo.Console("No links in the current file.", true);
                 }
-                return true;
             }
-            return false;
-        }
+        },
+        hotkeys: []
     })
     
     //
@@ -238,16 +195,13 @@ export default class IW extends Plugin {
     this.addCommand({
         id: 'load-iw-queue',
         name: 'Load a queue.',
-        checkCallback: (checking: boolean) => {
+        callback: () => {
             let leaf = this.app.workspace.activeLeaf;
             if (leaf) {
-                if (!checking) {
-                    new QueueLoadModal(this).open();
-                }
-                return true;
+                new QueueLoadModal(this).open();
             }
-            return false;
-        }
+        },
+        hotkeys: []
     });
   }
 
@@ -269,7 +223,8 @@ export default class IW extends Plugin {
 
               if (file instanceof TFile && file.extension === "md") {
                   menu.addItem((item) => {
-                      item.setTitle(`Add File to IW Queue`).setIcon('sheets-in-box')
+                      item.setTitle(`Add File to IW Queue`)
+                          .setIcon('sheets-in-box')
                           .onClick((evt) => {
                               new ReviewFileModal(this, file.path).open();
                           });
@@ -277,7 +232,8 @@ export default class IW extends Plugin {
               }
               else if (file instanceof TFolder) {
                   menu.addItem((item) => {
-                      item.setTitle(`Add Folder to IW Queue`).setIcon('sheets-in-box')
+                      item.setTitle(`Add Folder to IW Queue`)
+                          .setIcon('sheets-in-box')
                           .onClick((evt) => {
                               let files = this.app.vault.getMarkdownFiles()
                                 .filter(f => this.files.isDescendantOf(f, file))
@@ -296,5 +252,7 @@ export default class IW extends Plugin {
 
   onunload() {
     LogTo.Console("Disabled and unloaded.");
+    // TODO: Remove button from search
+    // TODO: Remove Status bar
   }
 }

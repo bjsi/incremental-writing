@@ -101,7 +101,6 @@ export class Queue {
 
         if (repToLoad.isDue()){
             await this.loadRep(repToLoad);
-            // this.updateStatusBar(table);
         }
         else{
             LogTo.Debug("No more repetitions!", true);
@@ -110,18 +109,13 @@ export class Queue {
         await this.writeQueueTable(table);
     }
 
-    // TODO: Don't use table, it will already have been updated
-    updateStatusBar(table: MarkdownTable){
-        // this.plugin.statusBar.updateReps(table.rows.length);
-        // this.plugin.statusBar.updateCurrentRep(table.rows[0]);
-    }
-
     private async loadRep(repToLoad: MarkdownTableRow){
         if (!repToLoad){
             LogTo.Console("Failed to load repetition.", true);
             return;
         }
 
+        this.plugin.statusBar.updateCurrentRep(repToLoad);
         LogTo.Console("Loading repetition: " + repToLoad.link, true);
         await this.plugin.app.workspace.openLinkText(repToLoad.link, '', false, { active: true  });
     }

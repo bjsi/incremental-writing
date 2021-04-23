@@ -1,7 +1,5 @@
 import { normalizePath, FuzzySuggestModal, TFolder } from "obsidian"
 import IW from "../main"
-import { Queue } from "../queue"
-import  { LogTo } from "../logger"
 
 export class QueueLoadModal extends FuzzySuggestModal<string> {
 
@@ -14,8 +12,7 @@ export class QueueLoadModal extends FuzzySuggestModal<string> {
 
     onChooseItem(item: string, evt: MouseEvent | KeyboardEvent) {
         let path = [this.plugin.settings.queueFolderPath, item].join('/');
-        this.plugin.queue = new Queue(this.plugin, path);
-        LogTo.Console("Loaded Queue: " + path, true);
+        this.plugin.loadQueue(path);
     }
 
     getItems(): string[] {

@@ -8,6 +8,7 @@ import { FileSuggest } from "./file-suggest"
 import { DateUtils } from "../helpers/date-utils"
 import { throttle } from "../helpers/functools"
 import { MarkdownTableRow } from "../markdown"
+import { LogTo } from "../logger"
 
 export class BulkAdderModal extends ModalBase {
 
@@ -58,7 +59,9 @@ export class BulkAdderModal extends ModalBase {
 
     async updateToAdd() {
         await this.updateOutstanding();
-        this.toAdd = this.linkPaths.filter(link => !this.outstanding.has(link));
+        this.toAdd = this.linkPaths
+            .filter(link => !this.outstanding.has(link))
+            .map(link => normalizePath(link))
         this.noteCountDiv.innerText = "Notes (excluding duplicates): " + this.toAdd.length;
     }
 
@@ -198,6 +201,7 @@ export class BulkAdderModal extends ModalBase {
         
         let queue = new Queue(this.plugin, this.getQueuePath());
         let rows: MarkdownTableRow[] = [];
+        LogTo.Console("To add: " + this.toAdd);
         for (let note of this.toAdd) {
             let file = this.plugin.app.vault.getAbstractFileByPath(note) as TFile;
             let link = this.plugin.files.toLinkText(file);

@@ -1,8 +1,6 @@
 import { normalizePath, MarkdownView, App, TFile, TFolder } from "obsidian"
 import { ObsidianUtilsBase } from "./obsidian-utils-base"
 
-
-
 // TODO: read: https://github.com/lynchjames/obsidian-day-planner/blob/d1eb7ce187e7757b7a3880358a6ee184b3b025da/src/file.ts#L48
 
 export class FileUtils extends ObsidianUtilsBase {

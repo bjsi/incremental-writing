@@ -1,10 +1,13 @@
 import { MarkdownTableRow } from "../markdown"
 
 export class StatusBar {
-    statusBar: HTMLElement
+
     statusBarAdded: boolean;
+    statusBar: HTMLElement
     statusBarText: HTMLSpanElement;
+
     repText: HTMLSpanElement;
+    queueText: HTMLSpanElement;
 
     constructor(statusBar:HTMLElement) {
         this.statusBar = statusBar;
@@ -15,37 +18,22 @@ export class StatusBar {
             return;
         }
 
-        let status = this.statusBar.createEl('div', { cls: 'day-planner', title: 'View the Day Planner', prepend: true });
-        this.statusBarText = status.createEl('span', { cls: ['status-bar-item-segment', 'day-planner-status-bar-text'] });
-        this.repText = status.createEl('span', { cls: ['status-bar-item-segment', 'day-planner-status-bar-text'] });
+        let status = this.statusBar.createEl('div', { prepend: true });
+        this.statusBarText = status.createEl('span', { cls: ['status-bar-item-segment'] });
+        this.repText = status.createEl('span', { cls: ['status-bar-item-segment'] });
+        this.queueText = status.createEl('span', { cls: ['status-bar-item-segment'] });
         this.statusBarAdded = true;
-
-        this.updateReps(0);
-
     }
 
-    updateReps(remainingReps: number) {
-        if(remainingReps == 0){
-            this.statusBarText.innerText = 'Reps: ALL DONE!';
-            return;
-        }
-
-        this.statusBarText.innerText = "Reps: " + remainingReps.toString();
+    updateCurrentQueue(queue: string) {
+        if (queue)
+            this.queueText.innerText = "IW Queue: " + queue;
     }
 
     updateCurrentRep(row: MarkdownTableRow) {
         if (row)
-            this.repText.innerText = "Current Rep: " + row.link;
+            this.repText.innerText = "IW Rep: " + row.link;
         else
-            this.repText.innerText = "Current Rep: None"
-    }
-
-    private ellipsis(input: string, limit: number){
-        if(input.length <= limit) {
-            return input;
-
-        }
-        return input.substring(0, limit) + '...';
-
+            this.repText.innerText = "Current Rep: None."
     }
 }
