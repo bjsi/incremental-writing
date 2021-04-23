@@ -2,7 +2,7 @@
   "id": "obsidian-incremental-writing",
   "name": "Incremental Writing",
   "description": "Incrementally review notes and blocks over time.",
-  "isDesktopOnly": false,
+  "isDesktopOnly": true,
   "version": "0.3",
   "author": "Experimental Learning",
   "authorUrl": "https://github.com/bjsi/incremental-writing",
