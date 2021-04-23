@@ -2,6 +2,8 @@
 
 This plugin allows you to do incremental writing in Obsidian. Notes and blocks can be added to queues that will schedule reviews of your writing over time.
 
+I made a video explaining incremental writing using an earlier version of the plugin [here](https://youtu.be/LLS_8Y744lk). I will create an updated version soon!
+
 ## Using the plugin
 
 NOTE: If you are using Vim mode, adding a block to the queue must be done with a hotkey because using ctrl+p to open the command palette causes the cursor to move up a line.
@@ -24,3 +26,9 @@ There are currently 10 hotkey / command palette commands and a couple of buttons
 You can also add the output from an inbuilt search to a queue. Do a search and click the button at the top of the search pane to try it out.
 
 You can also right click on folders, files and links to add them to queues through the context menu.
+
+## Support
+
+I want to put all of my energy into these projects and work on them full time! I also want to keep as much of my content open source and freely available as possible. That those seeking knowledge may find it!
+
+If you would like to support my work, I have a [Patreon page](https://www.patreon.com/experimental_learning) with rewards for each tier or you can [buy me a coffee](https://www.buymeacoffee.com/experilearning).
