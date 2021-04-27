@@ -4,9 +4,12 @@ This plugin allows you to do incremental writing in Obsidian. Notes and blocks c
 
 I made a video explaining incremental writing using an earlier version of the plugin [here](https://youtu.be/LLS_8Y744lk). I will create an updated version soon!
 
-## Using the plugin
+### Notes
 
-NOTE: If you are using Vim mode, adding a block to the queue must be done with a hotkey because using ctrl+p to open the command palette causes the cursor to move up a line.
+- This plugin adds a button to the search pane using private Obsidian APIs which could cause the plugin to break when Obsidian updates until I have time to fix it.
+- If you are using Vim mode, adding a block to the queue must be done with a hotkey because using ctrl+p to open the command palette causes the cursor to move up a line, so the wrong block will get added.
+
+## Using the plugin
 
 If you have installed the nldates plugin, you can use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks".
 
