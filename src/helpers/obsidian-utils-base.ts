@@ -1,11 +1,9 @@
-import { App } from "obsidian"
+import { App } from "obsidian";
 
 export abstract class ObsidianUtilsBase {
-    
-    app: App
+  app: App;
 
-    constructor(app: App) {
-        this.app = app;
-    }
+  constructor(app: App) {
+    this.app = app;
+  }
 }
-

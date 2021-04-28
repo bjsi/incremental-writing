@@ -1,17 +1,20 @@
 import { App, TAbstractFile, TFile, TFolder } from "obsidian";
 import { TextInputSuggest } from "./suggest";
-import IW from "../main"
+import IW from "../main";
 
 export class FileSuggest extends TextInputSuggest<TFile> {
+  folder: () => TFolder;
+  plugin: IW;
 
-    folder: () => TFolder
-    plugin: IW
-
-    constructor(plugin: IW, inputEl: HTMLInputElement, folderFunc: () => TFolder){
-        super(plugin.app, inputEl)
-        this.plugin = plugin;
-        this.folder = folderFunc;
-    }
+  constructor(
+    plugin: IW,
+    inputEl: HTMLInputElement,
+    folderFunc: () => TFolder
+  ) {
+    super(plugin.app, inputEl);
+    this.plugin = plugin;
+    this.folder = folderFunc;
+  }
 
   getSuggestions(inputStr: string): TFile[] {
     const abstractFiles = this.app.vault.getAllLoadedFiles();
