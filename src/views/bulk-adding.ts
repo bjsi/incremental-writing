@@ -14,7 +14,6 @@ import IW from "../main";
 import { Queue } from "../queue";
 import { FileSuggest } from "./file-suggest";
 import { DateUtils } from "../helpers/date-utils";
-import { throttle } from "../helpers/functools";
 import { MarkdownTableRow } from "../markdown";
 import { LogTo } from "../logger";
 
