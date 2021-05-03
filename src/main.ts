@@ -156,10 +156,13 @@ export default class IW extends Plugin {
       id: "note-add-iw-queue",
       name: "Add note to queue.",
       checkCallback: (checking: boolean) => {
-        if (checking) {
-          return this.files.getActiveNoteFile() != null;
+        if (this.files.getActiveNoteFile() != null) {
+          if (!checking) {
+            new ReviewNoteModal(this).open();
+          }
+          return true;
         }
-        new ReviewNoteModal(this).open();
+        return false;
       },
     });
 
@@ -174,10 +177,13 @@ export default class IW extends Plugin {
       id: "block-add-iw-queue",
       name: "Add block to queue.",
       checkCallback: (checking: boolean) => {
-        if (checking) {
-          return this.files.getActiveNoteFile() != null;
+        if (this.files.getActiveNoteFile() != null) {
+          if (!checking) {
+            new ReviewBlockModal(this).open();
+          }
+          return true;
         }
-        new ReviewBlockModal(this).open();
+        return false;
       },
       hotkeys: [],
     });
@@ -186,21 +192,23 @@ export default class IW extends Plugin {
       id: "add-links-within-note",
       name: "Add links within note to queue.",
       checkCallback: (checking: boolean) => {
-        if (checking) {
-          return this.files.getActiveNoteFile() != null;
-        }
-
-        let file = this.files.getActiveNoteFile();
-        if (file) {
-          let links = this.links.getLinksIn(file);
-          if (links && links.length)
-            new BulkAdderModal(this, this.queue.queuePath, links).open();
-          else {
-            LogTo.Console("No links in the current file.", true);
+        if (this.files.getActiveNoteFile() != null) {
+          if (!checking) {
+            let file = this.files.getActiveNoteFile();
+            if (file) {
+              let links = this.links.getLinksIn(file);
+              if (links && links.length)
+                new BulkAdderModal(this, this.queue.queuePath, links).open();
+              else {
+                LogTo.Console("No links in the current file.", true);
+              }
+            } else {
+              LogTo.Console("Failed to get the active note.", true);
+            }
           }
-        } else {
-          LogTo.Console("Failed to get the active note.", true);
+          return true;
         }
+        return false;
       },
       hotkeys: [],
     });

@@ -23,6 +23,12 @@ export class FileUtils extends ObsidianUtilsBase {
     return null;
   }
 
+  getTFolder(folderPath: string) {
+    let folder = this.app.vault.getAbstractFileByPath(folderPath);
+    if (folder instanceof TFolder) return folder;
+    return null;
+  }
+
   toLinkText(file: TFile) {
     return this.app.metadataCache.fileToLinktext(file, "", true);
   }
@@ -52,7 +58,7 @@ export class FileUtils extends ObsidianUtilsBase {
   }
 
   async goTo(filePath: string, newLeaf: boolean) {
-    let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+    let file = this.getTFile(filePath);
     let link = this.app.metadataCache.fileToLinktext(file, "");
     await this.app.workspace.openLinkText(link, "", newLeaf);
   }
