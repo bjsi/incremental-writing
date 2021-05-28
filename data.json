@@ -1,12 +1,1 @@
-{
-  "vimMode": false,
-  "defaultPriority": 30,
-  "queueFolderPath": "IW-Queues",
-  "queueFilePath": "queue.md",
-  "defaultAFactor": 2,
-  "defaultInterval": 1,
-  "defaultQueueType": "afactor",
-  "defaultPriorityMin": 27,
-  "defaultPriorityMax": 85,
-  "skipAddNoteWindow": true
-}
+{"defaultPriorityMin":27,"defaultPriorityMax":85,"queueFolderPath":"IW-Queues","queueFileName":"IW-Queue.md","defaultQueueType":"simple","skipAddNoteWindow":true,"vimMode":false,"defaultPriority":30,"queueFilePath":"queue.md","defaultAFactor":2,"defaultInterval":1}

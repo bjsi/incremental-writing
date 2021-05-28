@@ -84,24 +84,24 @@ export class Queue {
     let currentRep = table.currentRep();
     let nextRep = table.nextRep();
 
-    let repToLoad;
-
-    if (currentRep && nextRep) {
-      table.removeCurrentRep();
-      repToLoad = nextRep;
-    } else {
-      table.removeCurrentRep();
-      repToLoad = currentRep;
-    }
-
-    table.schedule(currentRep);
-
-    if (repToLoad.isDue()) {
-      await this.loadRep(repToLoad);
-    } else {
+    // Not due; don't schedule or load
+    if (currentRep && !currentRep.isDue()) {
       LogTo.Debug("No more repetitions!", true);
+      return;
     }
 
+    table.removeCurrentRep();
+    table.schedule(currentRep);
+    let repToLoad = null;
+
+    if (currentRep && !nextRep) {
+      repToLoad = currentRep;
+      LogTo.Debug("No more repetitions!", true);
+    } else if (currentRep && nextRep) {
+      repToLoad = nextRep.isDue() ? nextRep : currentRep;
+    }
+
+    await this.loadRep(repToLoad);
     await this.writeQueueTable(table);
   }
 
