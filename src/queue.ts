@@ -28,12 +28,14 @@ export class Queue {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Debug("No repetitions!", true);
+      if (table.removedDeleted) await this.writeQueueTable(table);
       return;
     }
 
     let curRep = table.currentRep();
     if (!curRep.isDue()) {
       LogTo.Debug("No due repetition to dismiss.", true);
+      if (table.removedDeleted) await this.writeQueueTable(table);
       return;
     }
 
@@ -51,6 +53,7 @@ export class Queue {
 
     let fm = this.getFrontmatterString(text);
     let table = new MarkdownTable(this.plugin, fm, text);
+    table.removeDeleted();
     table.sortReps();
     return table;
   }
@@ -62,6 +65,7 @@ export class Queue {
   async goToCurrentRep() {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
+      if (table.removedDeleted) await this.writeQueueTable(table);
       LogTo.Console("No more repetitions!", true);
       return;
     }
@@ -72,12 +76,15 @@ export class Queue {
     } else {
       LogTo.Console("No more repetitions!", true);
     }
+
+    if (table.removedDeleted) await this.writeQueueTable(table);
   }
 
   async nextRepetition() {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Console("No more repetitions!", true);
+      if (table.removedDeleted) await this.writeQueueTable(table);
       return;
     }
 
@@ -87,6 +94,7 @@ export class Queue {
     // Not due; don't schedule or load
     if (currentRep && !currentRep.isDue()) {
       LogTo.Debug("No more repetitions!", true);
+      if (table.removedDeleted) await this.writeQueueTable(table);
       return;
     }
 
@@ -198,6 +206,7 @@ export class Queue {
   async writeQueueTable(table: MarkdownTable): Promise<void> {
     let queue = this.getQueueAsTFile();
     if (queue) {
+      table.removeDeleted();
       let data = table.toString();
       table.sortReps();
       await this.plugin.app.vault.modify(queue, data);

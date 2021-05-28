@@ -4,6 +4,8 @@ import { PriorityUtils } from "./helpers/priority-utils";
 import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler";
 import IW from "./main";
 import { GrayMatterFile } from "gray-matter";
+import { LogTo } from "./logger";
+import { getLinkpath } from "obsidian";
 
 export class MarkdownTable {
   plugin: IW;
@@ -11,6 +13,7 @@ export class MarkdownTable {
   private header = `| Link | Priority | Notes | Interval | Next Rep |
 |------|----------|-------|---------|----------|`;
   rows: MarkdownTableRow[] = [];
+  removedDeleted: boolean = false;
 
   // TODO: just pass the gray matter object, replace text with contents.
   constructor(plugin: IW, frontMatter?: GrayMatterFile<string>, text?: string) {
@@ -23,6 +26,20 @@ export class MarkdownTable {
       if (idx !== -1)
         // line after yaml + header
         this.rows = this.parseRows(split.slice(idx + 1 + 2));
+    }
+  }
+
+  // TODO: test with blocks, different link settings
+  removeDeleted() {
+    let queuePath = this.plugin.queue.queuePath;
+    let exists = this.rows.filter((r) =>
+      this.plugin.links.exists(r.link, queuePath)
+    );
+    let removedNum = this.rows.length - exists.length;
+    this.rows = exists;
+    if (removedNum > 0) {
+      this.removedDeleted = true;
+      LogTo.Console(`Removed ${removedNum} reps with non-existent links.`);
     }
   }
 
