@@ -4,7 +4,9 @@ This plugin allows you to do [incremental writing](https://supermemo.guru/wiki/I
 
 To learn more about the ideas behind incremental writing, check out [this video I made](https://youtu.be/LLS_8Y744lk).
 
-To see the Obsidian incremental writing plugin in action, check out the [getting started video](https://youtu.be/bFF3umvXydQ).
+To learn the basic features of the Obsidian incremental writing plugin, check out the [getting started video](https://youtu.be/bFF3umvXydQ).
+
+To learn about the more advanced features like using multiple queues, check out [this video](https://youtu.be/onvKkHQfOzU).
 
 ### Support
 
