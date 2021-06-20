@@ -1,4 +1,4 @@
-import { TFolder, Plugin, TFile, ButtonComponent } from "obsidian";
+import { EventRef, TFolder, Plugin, TFile, ButtonComponent } from "obsidian";
 import { Queue } from "./queue";
 import { LogTo } from "./logger";
 import {
@@ -15,6 +15,7 @@ import { FileUtils } from "./helpers/file-utils";
 import { BulkAdderModal } from "./views/bulk-adding";
 import { BlockUtils } from "./helpers/block-utils";
 import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
+import {MarkdownTableRow} from "./markdown"
 
 export default class IW extends Plugin {
   settings: IWSettings;
@@ -27,6 +28,8 @@ export default class IW extends Plugin {
   links: LinkEx = new LinkEx(this.app);
   files: FileUtils = new FileUtils(this.app);
   blocks: BlockUtils = new BlockUtils(this.app);
+
+  private autoAddNewNotesOnCreateEvent: EventRef;
 
   async loadConfig() {
     this.settings = this.settings = Object.assign(
@@ -52,6 +55,33 @@ export default class IW extends Plugin {
     let queuePath = this.getDefaultQueuePath();
     this.queue = new Queue(this, queuePath);
     this.statusBar.updateCurrentQueue(queuePath);
+  }
+
+  randomWithinInterval(min: number, max: number) {
+      return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+
+  autoAddNewNotesOnCreate() {
+      if (this.settings.autoAddNewNotes){
+          this.autoAddNewNotesOnCreateEvent = this.app.vault.on('create', (file) => {
+              if (!(file instanceof TFile) || file.extension !== "md"){
+                  return;
+              }
+              let link = this.files.toLinkText(file);
+              let min = this.settings.defaultPriorityMin;
+              let max = this.settings.defaultPriorityMax;
+              let priority = this.randomWithinInterval(min, max)
+              let row = new MarkdownTableRow(link, priority, "")
+              LogTo.Console("Auto adding new note to default queue: " + link)
+              this.queue.addNotesToQueue(row);
+          });
+      }
+      else {
+          if (this.autoAddNewNotesOnCreateEvent) {
+              this.app.vault.offref(this.autoAddNewNotesOnCreateEvent);
+              this.autoAddNewNotesOnCreateEvent = undefined;
+          }
+        }
   }
 
   async getSearchLeafView() {
@@ -234,10 +264,11 @@ export default class IW extends Plugin {
   subscribeToEvents() {
     this.app.workspace.onLayoutReady(() => {
       this.addSearchButton();
+      this.autoAddNewNotesOnCreate(); 
     });
 
     this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file, source: string) => {
+      this.app.workspace.on("file-menu", (menu, file, _: string) => {
         if (file === null) {
           return;
         }
@@ -247,7 +278,7 @@ export default class IW extends Plugin {
             item
               .setTitle(`Add File to IW Queue`)
               .setIcon("sheets-in-box")
-              .onClick((evt) => {
+              .onClick((_) => {
                 new ReviewFileModal(this, file.path).open();
               });
           });
@@ -256,7 +287,7 @@ export default class IW extends Plugin {
             item
               .setTitle(`Add Folder to IW Queue`)
               .setIcon("sheets-in-box")
-              .onClick((evt) => {
+              .onClick((_) => {
                 let files = this.app.vault
                   .getMarkdownFiles()
                   .filter((f) => this.files.isDescendantOf(f, file))

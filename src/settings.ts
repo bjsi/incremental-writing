@@ -5,6 +5,7 @@ export interface IWSettings {
   queueFolderPath: string;
   defaultQueueType: string;
   skipAddNoteWindow: boolean;
+  autoAddNewNotes: boolean;
 }
 
 export const DefaultSettings: IWSettings = {
@@ -14,4 +15,5 @@ export const DefaultSettings: IWSettings = {
   queueFileName: "IW-Queue.md",
   defaultQueueType: "afactor",
   skipAddNoteWindow: false,
+  autoAddNewNotes: false,
 };

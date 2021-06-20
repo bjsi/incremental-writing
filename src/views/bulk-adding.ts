@@ -98,7 +98,7 @@ export class BulkAdderModal extends ModalBase {
       .setValue(this.plugin.settings.queueFileName)
       .onChange(
         debounce(
-          (value: string) => {
+          (_: string) => {
             this.updateToAdd();
           },
           500,
