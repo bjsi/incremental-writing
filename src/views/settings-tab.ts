@@ -156,14 +156,14 @@ export class IWSettingsTab extends PluginSettingTab {
     // Auto add
 
     new Setting(containerEl)
-        .setName("Auto Add New Notes?")
-        .setDesc("Automatically add new notes to the default queue?")
-        .addToggle((comp) => {
-            comp.setValue(settings.autoAddNewNotes).onChange((value) => {
-                settings.autoAddNewNotes = value
-                this.plugin.saveData(settings);
-                this.plugin.autoAddNewNotesOnCreate();
-            })
-        })
+      .setName("Auto Add New Notes?")
+      .setDesc("Automatically add new notes to the default queue?")
+      .addToggle((comp) => {
+        comp.setValue(settings.autoAddNewNotes).onChange((value) => {
+          settings.autoAddNewNotes = value;
+          this.plugin.saveData(settings);
+          this.plugin.autoAddNewNotesOnCreate();
+        });
+      });
   }
 }
