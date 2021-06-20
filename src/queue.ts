@@ -104,7 +104,6 @@ export class Queue {
 
     if (currentRep && !nextRep) {
       repToLoad = currentRep;
-      LogTo.Debug("No more repetitions!", true);
     } else if (currentRep && nextRep) {
       repToLoad = nextRep.isDue() ? nextRep : currentRep;
     }
