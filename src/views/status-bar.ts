@@ -1,6 +1,5 @@
 import { MarkdownTableRow } from "../markdown";
 import IW from "../main";
-import { TFile } from "obsidian";
 
 export class StatusBar {
   statusBarAdded: boolean;
