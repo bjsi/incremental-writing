@@ -15,7 +15,7 @@ import { FileUtils } from "./helpers/file-utils";
 import { BulkAdderModal } from "./views/bulk-adding";
 import { BlockUtils } from "./helpers/block-utils";
 import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
-import {MarkdownTableRow} from "./markdown"
+import { MarkdownTableRow } from "./markdown";
 
 export default class IW extends Plugin {
   settings: IWSettings;
@@ -58,30 +58,32 @@ export default class IW extends Plugin {
   }
 
   randomWithinInterval(min: number, max: number) {
-      return Math.floor(Math.random() * (max - min + 1) + min)
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
   autoAddNewNotesOnCreate() {
-      if (this.settings.autoAddNewNotes){
-          this.autoAddNewNotesOnCreateEvent = this.app.vault.on('create', (file) => {
-              if (!(file instanceof TFile) || file.extension !== "md"){
-                  return;
-              }
-              let link = this.files.toLinkText(file);
-              let min = this.settings.defaultPriorityMin;
-              let max = this.settings.defaultPriorityMax;
-              let priority = this.randomWithinInterval(min, max)
-              let row = new MarkdownTableRow(link, priority, "")
-              LogTo.Console("Auto adding new note to default queue: " + link)
-              this.queue.addNotesToQueue(row);
-          });
-      }
-      else {
-          if (this.autoAddNewNotesOnCreateEvent) {
-              this.app.vault.offref(this.autoAddNewNotesOnCreateEvent);
-              this.autoAddNewNotesOnCreateEvent = undefined;
+    if (this.settings.autoAddNewNotes) {
+      this.autoAddNewNotesOnCreateEvent = this.app.vault.on(
+        "create",
+        (file) => {
+          if (!(file instanceof TFile) || file.extension !== "md") {
+            return;
           }
+          let link = this.files.toLinkText(file);
+          let min = this.settings.defaultPriorityMin;
+          let max = this.settings.defaultPriorityMax;
+          let priority = this.randomWithinInterval(min, max);
+          let row = new MarkdownTableRow(link, priority, "");
+          LogTo.Console("Auto adding new note to default queue: " + link);
+          this.queue.addNotesToQueue(row);
         }
+      );
+    } else {
+      if (this.autoAddNewNotesOnCreateEvent) {
+        this.app.vault.offref(this.autoAddNewNotesOnCreateEvent);
+        this.autoAddNewNotesOnCreateEvent = undefined;
+      }
+    }
   }
 
   async getSearchLeafView() {
@@ -264,7 +266,7 @@ export default class IW extends Plugin {
   subscribeToEvents() {
     this.app.workspace.onLayoutReady(() => {
       this.addSearchButton();
-      this.autoAddNewNotesOnCreate(); 
+      this.autoAddNewNotesOnCreate();
     });
 
     this.registerEvent(
