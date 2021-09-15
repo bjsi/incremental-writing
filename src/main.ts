@@ -181,6 +181,38 @@ export default class IW extends Plugin {
       hotkeys: [],
     });
 
+    this.addCommand({
+      id: "increase-priority-small",
+      name: "Increase Priority (small)",
+      callback: () => {
+        this.queue.changePriority(0.1);
+      },
+      hotkeys: [],
+    });
+
+    this.addCommand({
+      id: "decrease-priority-small",
+      name: "Decrease Priority (small)",
+      callback: () => this.queue.changePriority(-0.1),
+      hotkeys: [],
+    });
+
+    this.addCommand({
+      id: "increase-priority-large",
+      name: "Increase Priority (large)",
+      callback: () => {
+        this.queue.changePriority(5);
+      },
+      hotkeys: [],
+    });
+
+    this.addCommand({
+      id: "decrease-priority-large",
+      name: "Decrease Priority (large)",
+      callback: () => this.queue.changePriority(-5),
+      hotkeys: [],
+    });
+
     //
     // Element Adding.
 

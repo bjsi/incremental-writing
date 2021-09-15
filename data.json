@@ -5,7 +5,7 @@
   "queueFileName": "Tasks.md",
   "defaultQueueType": "simple",
   "skipAddNoteWindow": true,
-  "autoAddNewNotes": true,
+  "autoAddNewNotes": false,
   "vimMode": false,
   "defaultPriority": 30,
   "queueFilePath": "queue.md",

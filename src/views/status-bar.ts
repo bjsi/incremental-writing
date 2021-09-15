@@ -7,6 +7,7 @@ export class StatusBar {
   statusBarText: HTMLSpanElement;
 
   repText: HTMLSpanElement;
+  priorityText: HTMLSpanElement;
   queueText: HTMLSpanElement;
 
   plugin: IW;
@@ -28,6 +29,9 @@ export class StatusBar {
     this.repText = status.createEl("span", {
       cls: ["status-bar-item-segment"],
     });
+    this.priorityText = status.createEl("span", {
+      cls: ["status-bar-item-segment"],
+    });
     this.queueText = status.createEl("span", {
       cls: ["status-bar-item-segment"],
     });
@@ -42,11 +46,16 @@ export class StatusBar {
     }
   }
 
+  updateCurrentPriority(n: number) {
+    this.priorityText.innerText = "Pri: " + n.toString();
+  }
+
   updateCurrentRep(row: MarkdownTableRow) {
     if (row) {
       let link = row.link;
       let file = this.plugin.files.getTFile(link + ".md");
       if (file) {
+        this.updateCurrentPriority(row.priority);
         this.repText.innerText = "IW Rep: " + file.basename;
         return;
       }

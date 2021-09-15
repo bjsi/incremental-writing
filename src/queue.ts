@@ -4,6 +4,7 @@ import { LogTo } from "./logger";
 import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
+import { PriorityUtils } from "./helpers/priority-utils";
 
 export class Queue {
   queuePath: string;
@@ -22,6 +23,32 @@ export class Queue {
   async goToQueue(newLeaf: boolean) {
     await this.createTableIfNotExists();
     await this.plugin.files.goTo(this.queuePath, newLeaf);
+  }
+
+  async changePriority(n: number) {
+    let table = await this.loadTable();
+    if (!table || !table.hasReps()) {
+      LogTo.Debug("No repetitions!", true);
+      return;
+    }
+
+    let curRep = table.currentRep();
+    if (!curRep) {
+      LogTo.Debug("No repetitions!", true);
+      return;
+    }
+
+    let newPriority = curRep.priority + n;
+    if (newPriority < 0) {
+      newPriority = 0;
+    } else if (newPriority > 100) {
+      newPriority = 100;
+    }
+
+    curRep.priority = newPriority;
+    await this.writeQueueTable(table);
+    this.plugin.statusBar.updateCurrentPriority(newPriority);
+    LogTo.Debug(`Priority updated to: ${newPriority}`, true);
   }
 
   async dismissCurrent() {
