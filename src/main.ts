@@ -1,4 +1,13 @@
-import { EventRef, TFolder, Plugin, TFile, ButtonComponent } from "obsidian";
+import {
+  EventRef,
+  TFolder,
+  Plugin,
+  TFile,
+  ButtonComponent,
+  getAllTags,
+  debounce,
+  TAbstractFile,
+} from "obsidian";
 import { Queue } from "./queue";
 import { LogTo } from "./logger";
 import {
@@ -18,18 +27,20 @@ import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
 import { MarkdownTableRow } from "./markdown";
 
 export default class IW extends Plugin {
-  settings: IWSettings;
-  statusBar: StatusBar;
-  queue: Queue;
+  public settings: IWSettings;
+  public statusBar: StatusBar;
+  public queue: Queue;
 
   //
   // Utils
 
-  links: LinkEx = new LinkEx(this.app);
-  files: FileUtils = new FileUtils(this.app);
-  blocks: BlockUtils = new BlockUtils(this.app);
+  public links: LinkEx = new LinkEx(this.app);
+  public files: FileUtils = new FileUtils(this.app);
+  public blocks: BlockUtils = new BlockUtils(this.app);
 
   private autoAddNewNotesOnCreateEvent: EventRef;
+  private checkTagsOnModifiedEvent: EventRef;
+  private tagMap: Map<TFile, Set<string>> = new Map();
 
   async loadConfig() {
     this.settings = this.settings = Object.assign(
@@ -39,10 +50,31 @@ export default class IW extends Plugin {
     );
   }
 
+  getQueueFiles() {
+    const abstractFiles = this.app.vault.getAllLoadedFiles();
+    const queueFiles = abstractFiles.filter((file: TAbstractFile) => {
+      return (
+        file instanceof TFile &&
+        file.parent.path === this.settings.queueFolderPath &&
+        file.extension === "md"
+      );
+    });
+    return <TFile[]>queueFiles;
+  }
+
   getDefaultQueuePath() {
     return [this.settings.queueFolderPath, this.settings.queueFileName].join(
       "/"
     );
+  }
+
+  createTagMap() {
+    const notes: TFile[] = this.app.vault.getMarkdownFiles();
+    for (const note of notes) {
+      const fileCachedData = this.app.metadataCache.getFileCache(note) || {};
+      const tags = new Set(getAllTags(fileCachedData) || []);
+      this.tagMap.set(note, tags);
+    }
   }
 
   async onload() {
@@ -59,6 +91,65 @@ export default class IW extends Plugin {
 
   randomWithinInterval(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  checkTagsOnModified() {
+    this.checkTagsOnModifiedEvent = this.app.vault.on(
+      "modify",
+      debounce(
+        async (file) => {
+          if (!(file instanceof TFile) || file.extension !== "md") {
+            return;
+          }
+
+          const fileCachedData =
+            this.app.metadataCache.getFileCache(file) || {};
+
+          const currentTags = new Set(getAllTags(fileCachedData) || []);
+          const lastTags = this.tagMap.get(file) || new Set<string>();
+
+          let setsEqual = (a: Set<string>, b: Set<string>) =>
+            a.size === b.size && [...a].every((value) => b.has(value));
+          if (setsEqual(new Set(currentTags), new Set(lastTags))) {
+            LogTo.Debug("No tag changes.");
+            return;
+          }
+
+          LogTo.Debug("Updating tags.");
+          this.tagMap.set(file, currentTags);
+          const newTags = [...currentTags].filter((x) => !lastTags.has(x)); // set difference
+          LogTo.Debug("Added new tags: " + newTags.toString());
+
+          const queueFiles = this.getQueueFiles();
+          LogTo.Debug("Queue Files: " + queueFiles.toString());
+
+          const queueTagMap = this.settings.queueTagMap
+          const newQueueTags = newTags
+            .map((tag) => tag.substr(1))
+            .filter((tag) => Object.values(queueTagMap).some(arr => arr.contains(tag)));
+
+          LogTo.Debug("New Queue Tags: " + newQueueTags.toString());
+          for (const queueTag of newQueueTags) {
+            const addToQueueFiles = queueFiles
+              .filter((f: TFile) => queueTagMap[f.name.substr(0, f.name.length-3)].contains(queueTag))
+            
+            for (const queueFile of addToQueueFiles) {
+              const queue = new Queue(this, queueFile.path);
+              LogTo.Debug(`Adding ${file.name} to ${queueFile.name}`);
+              const link = this.files.toLinkText(file);
+              const min = this.settings.defaultPriorityMin;
+              const max = this.settings.defaultPriorityMax;
+              const priority = this.randomWithinInterval(min, max);
+              const row = new MarkdownTableRow(link, priority, "");
+              await queue.addNotesToQueue(row);
+            }
+          }
+          // already debounced 2 secs but not throttled, true on resetTimer throttles the callback
+        },
+        3000,
+        true
+      )
+    );
   }
 
   autoAddNewNotesOnCreate() {
@@ -297,6 +388,8 @@ export default class IW extends Plugin {
 
   subscribeToEvents() {
     this.app.workspace.onLayoutReady(() => {
+      this.createTagMap();
+      this.checkTagsOnModified();
       this.addSearchButton();
       this.autoAddNewNotesOnCreate();
     });
@@ -346,8 +439,19 @@ export default class IW extends Plugin {
     }
   }
 
+  unsubscribeFromEvents() {
+    for (let e of [
+      this.autoAddNewNotesOnCreateEvent,
+      this.checkTagsOnModifiedEvent,
+    ]) {
+      this.app.vault.offref(e);
+      e = undefined;
+    }
+  }
+
   async onunload() {
     LogTo.Console("Disabled and unloaded.");
     await this.removeSearchButton();
+    this.unsubscribeFromEvents();
   }
 }

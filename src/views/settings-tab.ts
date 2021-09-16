@@ -9,6 +9,7 @@ import {
 import IW from "../main";
 import { FileSuggest, FolderSuggest } from "./file-suggest";
 import { PriorityUtils } from "../helpers/priority-utils";
+import { LogTo } from "src/logger";
 
 export class IWSettingsTab extends PluginSettingTab {
   plugin: IW;
@@ -83,6 +84,51 @@ export class IWSettingsTab extends PluginSettingTab {
         comp.addOption("simple", "Simple Scheduler");
         comp.setValue(String(settings.defaultQueueType)).onChange((value) => {
           settings.defaultQueueType = String(value);
+          this.plugin.saveData(settings);
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Queue Tags")
+      .setDesc(
+        "Mapping from queue names to tags. Tagging a note with these tags will add it to the corresponding queue."
+      )
+      .addTextArea((textArea) => {
+        textArea.setPlaceholder(
+          "Example: IW-Queue=iw,writing\nTasks=tasks,todo"
+        );
+        const currentValue = Object.entries(settings.queueTagMap)
+          .map(
+            ([queue, tags]: [string, string[]]) => `${queue}=${tags.join(",")}`
+          )
+          .join("\n");
+
+        textArea.setValue(currentValue).onChange((value) => {
+          let str = String(value).trim();
+          if (!str) return;
+          if (!str.split(/\r?\n/).every((line) => line.match(/(.+)=(.+,?)+/))) {
+            LogTo.Debug("Invalid queue tag map. Not saving.");
+            return;
+          }
+
+          const isEmpty = (s: string | any[]) => !s || s.length === 0;
+          const split: [string, string[]][] = str
+            .split(/\r?\n/)
+            .map((line) => line.split("="))
+            .map(([queue, tags]: [string, string]) => [queue, tags.split(",")
+                                                                  .map(s => s.trim())
+                                                                  .filter(s => !isEmpty(s))]);
+
+          let queueTagMap: Record<string, string[]> = {};
+          for (let [queue, tags] of split) {
+            if (!isEmpty(queue) && !isEmpty(tags))
+              queueTagMap[queue] = tags;
+          }
+
+          settings.queueTagMap = queueTagMap;
+          LogTo.Debug(
+            "Updating queue tag map to: " + JSON.stringify(queueTagMap)
+          );
           this.plugin.saveData(settings);
         });
       });

@@ -1,4 +1,12 @@
 {
+  "queueTagMap": {
+    "IW-Queue": [
+      "iw-queue"
+    ],
+    "Tasks": [
+      "tasks"
+    ]
+  },
   "defaultPriorityMin": 17,
   "defaultPriorityMax": 64,
   "queueFolderPath": "IW-Queues",

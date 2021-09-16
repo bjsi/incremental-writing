@@ -1,5 +1,6 @@
 export interface IWSettings {
   defaultPriorityMin: number;
+  queueTagMap: Record<string, string[]>;
   defaultPriorityMax: number;
   queueFileName: string;
   queueFolderPath: string;
@@ -9,6 +10,7 @@ export interface IWSettings {
 }
 
 export const DefaultSettings: IWSettings = {
+  queueTagMap: { "IW-Queue": ["iw-queue"] },
   defaultPriorityMin: 10,
   defaultPriorityMax: 50,
   queueFolderPath: "IW-Queues",
