@@ -1,33 +1,25 @@
 import { ObsidianUtilsBase } from "./obsidian-utils-base";
 import { App, TFile } from "obsidian";
+import { LogTo } from "src/logger";
 
 export class BlockUtils extends ObsidianUtilsBase {
   constructor(app: App) {
     super(app);
   }
 
-  // TODO: Rewrite
-  getBlock(inputLine: string, noteFile: TFile): string {
-    //Returns the string of a block ID if block is found, or "" if not.
-    let noteBlocks = this.app.metadataCache.getFileCache(noteFile).blocks;
-    console.log("Checking if line '" + inputLine + "' is a block.");
-    let blockString = "";
-    if (noteBlocks) {
-      // the file does contain blocks. If not, return ""
-      for (let eachBlock in noteBlocks) {
-        // iterate through the blocks.
-        console.log("Checking block ^" + eachBlock);
-        let blockRegExp = new RegExp("(" + eachBlock + ")$", "gim");
-        if (inputLine.match(blockRegExp)) {
-          // if end of inputLine matches block, return it
-          blockString = eachBlock;
-          console.log("Found block ^" + blockString);
-          return blockString;
-        }
-      }
-      return blockString;
+  async getBlockRefHash(lineNumber: number, noteFile: TFile): Promise<string> {
+    const noteLines = (await this.app.vault.read(noteFile))
+    	?.split(/\r?\n/);
+    if (!noteLines || noteLines.length == 0)
+    {
+      LogTo.Debug("Failed to read lines from note.")
+      return null;
     }
-    return blockString;
+    const blockRefRegex = new RegExp("(.+)( \^[=a-zA-Z0-9]+)$", "gm");
+    const match = noteLines[lineNumber].match(blockRefRegex);
+    return match
+    	? match[1]
+	: "";
   }
 
   createBlockHash(): string {

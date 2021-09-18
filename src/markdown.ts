@@ -5,7 +5,6 @@ import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler";
 import IW from "./main";
 import { GrayMatterFile } from "gray-matter";
 import { LogTo } from "./logger";
-import { getLinkpath } from "obsidian";
 
 export class MarkdownTable {
   plugin: IW;

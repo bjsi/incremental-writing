@@ -21,6 +21,7 @@ abstract class ReviewModal extends ModalBase {
   inputNoteField: TextComponent;
   inputFirstRep: TextComponent;
   inputQueueField: TextComponent;
+  titleNode: HTMLElement;
 
   constructor(plugin: IW, title: string) {
     super(plugin);
@@ -30,7 +31,7 @@ abstract class ReviewModal extends ModalBase {
   onOpen() {
     let { contentEl } = this;
 
-    contentEl.createEl("h2", { text: this.title });
+    this.titleNode = contentEl.createEl("h2", { text: this.title });
 
     //
     // Queue
@@ -200,41 +201,70 @@ export class ReviewFileModal extends ReviewModal {
 }
 
 export class ReviewBlockModal extends ReviewModal {
+  
+  private customBlockRefInput: TextComponent;
+
   constructor(plugin: IW) {
     super(plugin, "Add Block to Outstanding?");
   }
 
   onOpen() {
     super.onOpen();
+    let {contentEl} = this;
+    this.customBlockRefInput = new TextComponent(contentEl);
+    const br = contentEl.createEl("br");
+    this.titleNode.after("Block Ref Name: ", this.customBlockRefInput.inputEl, br);
+    this.customBlockRefInput.inputEl.focus();
+    this.customBlockRefInput.inputEl.select();
   }
 
-  // TODO: Change to just sending the line no?
-  getCurrentLineText(): string {
-    let editor = (this.app.workspace.activeLeaf.view as MarkdownView).editor;
-    let cursor = editor.getCursor();
-    let lineNo = cursor.line;
-    return editor.getLine(lineNo);
+  getCurrentLineNumber(): number | null {
+    return (this.app.workspace.activeLeaf.view as MarkdownView).editor
+    	?.getCursor()
+	?.line;
   }
 
   async addToOutstanding() {
-    let date = this.parseDate(this.inputFirstRep.getValue());
+    const date = this.parseDate(this.inputFirstRep.getValue());
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
     }
 
-    let queue = new Queue(this.plugin, this.getQueuePath());
-    let file = this.plugin.files.getActiveNoteFile();
+    const queue = new Queue(this.plugin, this.getQueuePath());
+    const file = this.plugin.files.getActiveNoteFile();
     if (!file) {
       LogTo.Console("Failed to add to outstanding.", true);
       return;
     }
+
+    const lineNumber = this.getCurrentLineNumber();
+    if (lineNumber === null) {
+	LogTo.Console("Failed to get the current line number.", true);
+	return;
+    }
+    
+    const blockRefName = this.customBlockRefInput.getValue();
+    if (blockRefName && blockRefName !== "") {
+	    if (!blockRefName.match(/^[=a-zA-Z0-9]+$/)){
+		    LogTo.Debug("Invalid block ref name.", true);
+		    return;
+	    }
+	    // reject if the same block ref name is already used in this file
+	    const refs = this.app.metadataCache.getFileCache(file).blocks
+    	    if (refs && Object.keys(refs).some(ref => ref === blockRefName)) {
+		    LogTo.Debug("This block ref is already used in this file.", true)
+		    return;
+	    }
+    }
+
     await queue.addBlockToQueue(
       this.getPriority(),
       this.getNotes(),
       date,
-      this.getCurrentLineText(),
-      file
+      lineNumber,
+      file,
+      blockRefName
     );
   }
 }

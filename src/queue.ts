@@ -5,6 +5,7 @@ import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
 import { PriorityUtils } from "./helpers/priority-utils";
+import {EOL} from "os";
 
 export class Queue {
   queuePath: string;
@@ -182,9 +183,11 @@ export class Queue {
     priority: number,
     notes: string,
     date: Date,
-    block: string,
-    activeNoteFile: TFile
+    blockLine: number,
+    activeNoteFile: TFile,
+    customBlockRefHash: string,
   ) {
+
     await this.createTableIfNotExists();
     let table = await this.loadTable();
     LogTo.Debug("Add block to queue");
@@ -193,19 +196,25 @@ export class Queue {
       "",
       true
     );
-    let lineBlockId = this.plugin.blocks.getBlock(block, activeNoteFile);
 
-    if (lineBlockId === "") {
-      // The line is not already a block
-      console.debug("This line is not currently a block. Adding a block ID.");
-      lineBlockId = this.plugin.blocks.createBlockHash();
-      let lineWithBlock = block + " ^" + lineBlockId;
-      let oldText = await this.plugin.app.vault.read(activeNoteFile);
-      let newNoteText = oldText.replace(block, lineWithBlock);
-      await this.plugin.app.vault.modify(activeNoteFile, newNoteText);
+    let blockRefHash = await this.plugin.blocks.getBlockRefHash(blockLine, activeNoteFile);
+    if (blockRefHash === null) {
+	    LogTo.Console("Error getting block ref hash")
+	    return;
+    }
+    else if (blockRefHash === "") {
+      let oldNoteLines = (await this.plugin.app.vault.read(activeNoteFile))
+	?.split(/\r?\n/) || []
+      blockRefHash = (customBlockRefHash && customBlockRefHash.length !== 0)
+      	? customBlockRefHash
+	: this.plugin.blocks.createBlockHash();
+
+      const idx = blockLine;
+      oldNoteLines[idx] = oldNoteLines[idx] + " ^" + blockRefHash;
+      await this.plugin.app.vault.modify(activeNoteFile, oldNoteLines.join(EOL));
     }
 
-    link = link + "#^" + lineBlockId;
+    link = link + "#^" + blockRefHash;
 
     if (table.hasRowWithLink(link)) {
       LogTo.Console("Already in your queue!", true);
