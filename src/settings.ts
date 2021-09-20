@@ -7,6 +7,7 @@ export interface IWSettings {
   defaultQueueType: string;
   skipAddNoteWindow: boolean;
   autoAddNewNotes: boolean;
+  defaultFirstRepDate: string;
 }
 
 export const DefaultSettings: IWSettings = {
@@ -18,4 +19,5 @@ export const DefaultSettings: IWSettings = {
   defaultQueueType: "afactor",
   skipAddNoteWindow: false,
   autoAddNewNotes: false,
+  defaultFirstRepDate: "1970-01-01",
 };

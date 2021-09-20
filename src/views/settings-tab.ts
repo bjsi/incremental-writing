@@ -5,6 +5,7 @@ import {
   PluginSettingTab,
   App,
   Setting,
+  debounce
 } from "obsidian";
 import IW from "../main";
 import { FileSuggest, FolderSuggest } from "./file-suggest";
@@ -86,6 +87,35 @@ export class IWSettingsTab extends PluginSettingTab {
           this.plugin.saveData(settings);
         });
       });
+    
+    //
+    // Default First Rep Date
+
+    new Setting(containerEl)
+      .setName("Default First Rep Date")
+      .setDesc("Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. Requires that you have installed the nldates plugin.")
+      .addText((comp) => {
+	comp.setPlaceholder("Example: today, tomorrow, next week.")
+        const nldates = (<any>this.plugin.app).plugins.getPlugin("nldates-obsidian");
+	comp.disabled = nldates === null;
+        comp.setValue(String(settings.defaultFirstRepDate)).onChange(debounce((value) => {
+
+	  const dateString = String(value);
+	  const date = nldates.parseDate(dateString);
+	  if (date && date.date){
+      LogTo.Debug("Setting default first rep date to " + dateString);
+		  settings.defaultFirstRepDate = dateString;  
+		  this.plugin.saveData(settings);
+	  }
+	  else {
+		  LogTo.Debug("Invalid natural language date string.");
+	  }
+        }, 500, true));
+
+      });
+
+    //
+    // Queue Tags
 
     new Setting(containerEl)
       .setName("Queue Tags")

@@ -51,11 +51,12 @@ abstract class ReviewModal extends ModalBase {
 
     //
     // First Rep Date
-
+    
+    const firstRepDate = this.plugin.settings.defaultFirstRepDate;
     contentEl.appendText("First Rep Date: ");
     this.inputFirstRep = new TextComponent(contentEl)
       .setPlaceholder("Date")
-      .setValue("1970-01-01");
+      .setValue(firstRepDate);
     contentEl.createEl("br");
 
     this.inputFirstRep.inputEl.focus();
