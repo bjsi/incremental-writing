@@ -135,12 +135,8 @@ export class MarkdownTable {
   }
 
   sortReps() {
-    if (this.scheduler instanceof SimpleScheduler) {
-      this.sortByPriority();
-    } else if (this.scheduler instanceof AFactorScheduler) {
       this.sortByPriority();
       this.sortByDue();
-    }
   }
 
   getReps() {
