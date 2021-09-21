@@ -13,8 +13,8 @@ import { FileSuggest } from "./file-suggest";
 import { Queue } from "../queue";
 import { PriorityUtils } from "../helpers/priority-utils";
 import { MarkdownTableRow } from "../markdown";
-import "./helpers/date-utils";
-import "./helpers/number-utils";
+import "../helpers/date-utils";
+import "../helpers/number-utils";
 
 abstract class ReviewModal extends ModalBase {
 
