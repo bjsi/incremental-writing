@@ -115,6 +115,19 @@ export class IWSettingsTab extends PluginSettingTab {
       });
 
     //
+    // Ask for next repetition date
+
+    new Setting(containerEl)
+      .setName("Ask for Next Repetition Date?")
+      .setDesc("Do you want to be asked to give the next repetition date when you execute the next repetition command?")
+      .addToggle((comp) => {
+           comp.setValue(Boolean(settings.askForNextRepDate)).onChange((value) => {
+               settings.askForNextRepDate = Boolean(value);
+               this.plugin.saveData(settings);
+           })
+      })
+
+    //
     // Queue Tags
 
     new Setting(containerEl)

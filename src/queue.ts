@@ -5,6 +5,7 @@ import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
 import {EOL} from "os";
+import { NextRepScheduler } from "./views/next-rep-schedule";
 
 export class Queue {
   queuePath: string;
@@ -127,6 +128,7 @@ export class Queue {
 
     table.removeCurrentRep();
     table.schedule(currentRep);
+
     let repToLoad = null;
 
     if (currentRep && !nextRep) {
@@ -137,6 +139,10 @@ export class Queue {
 
     await this.loadRep(repToLoad);
     await this.writeQueueTable(table);
+
+    if (this.plugin.settings.askForNextRepDate) {
+	new NextRepScheduler(this.plugin, currentRep, table).open();
+    }
   }
 
   private async loadRep(repToLoad: MarkdownTableRow) {

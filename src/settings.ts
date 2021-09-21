@@ -8,6 +8,7 @@ export interface IWSettings {
   skipAddNoteWindow: boolean;
   autoAddNewNotes: boolean;
   defaultFirstRepDate: string;
+  askForNextRepDate: boolean;
 }
 
 export const DefaultSettings: IWSettings = {
@@ -20,4 +21,5 @@ export const DefaultSettings: IWSettings = {
   skipAddNoteWindow: false,
   autoAddNewNotes: false,
   defaultFirstRepDate: "1970-01-01",
+  askForNextRepDate: false,
 };

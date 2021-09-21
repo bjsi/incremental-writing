@@ -1,46 +1,62 @@
 import IW from "../main";
 import { LogTo } from "../logger";
 import {
-  normalizePath,
-  TFolder,
-  TFile,
   SliderComponent,
-  Notice,
   TextComponent,
   ButtonComponent,
-  debounce,
 } from "obsidian";
 import { ModalBase } from "./modal-base";
-import { MarkdownTableRow } from "../markdown";
-import { PriorityUtils } from "../helpers/priority-utils";
+import { MarkdownTableRow, MarkdownTable} from "../markdown";
+import { DateUtils } from "src/helpers/date-utils";
 
 export class NextRepScheduler extends ModalBase {
-  inputPriority: SliderComponent;
-  inputInterval: TextComponent;
-  curRep: MarkdownTableRow;
 
-  constructor(plugin: IW, curRep: MarkdownTableRow) {
+  private priorityComponent: SliderComponent;
+  private repDateComponent: TextComponent;
+  private curRep: MarkdownTableRow;
+  private table: MarkdownTable;
+
+  constructor(plugin: IW, curRep: MarkdownTableRow, table: MarkdownTable) {
     super(plugin);
     this.curRep = curRep;
+    this.table = table;
   }
 
   onOpen() {
+    this.subscribeToEvents();
     let { contentEl } = this;
 
-    // Interval or Date
+    contentEl.createEl("h2", { text: "Set Next Repetition Data" });
 
-    contentEl.appendText("Interval: ");
-    this.inputInterval = new TextComponent(contentEl).setValue(
-      String(this.curRep.priority)
+    //
+    // Date
+
+    contentEl.appendText("Next repetition date: ");
+    this.repDateComponent = new TextComponent(contentEl).setValue(
+      DateUtils.formatDate(this.curRep.nextRepDate)
     );
     contentEl.createEl("br");
+
+    this.repDateComponent.inputEl.focus();
+    this.repDateComponent.inputEl.select();
+
+    //
+    // Priority
+  
+  contentEl.appendText("Priority: ");
+  this.priorityComponent = new SliderComponent(contentEl)
+    .setLimits(0, 100, 1)
+    .setValue(this.curRep.priority)
+    .setDynamicTooltip();
+  contentEl.createEl("br");
 
     //
     // Button
 
-    let inputButton = new ButtonComponent(contentEl)
+    new ButtonComponent(contentEl)
       .setButtonText("Schedule")
       .onClick(async () => {
+        await this.schedule();
         this.close();
       });
   }
@@ -49,11 +65,36 @@ export class NextRepScheduler extends ModalBase {
     return !isNaN(ivl) && ivl >= 1;
   }
 
-  schedule() {
-    let ivl = Math.round(Number(this.inputInterval.getValue()));
-    if (!this.intervalIsValid(ivl)) {
-      LogTo.Debug("Invalid interval!");
+  subscribeToEvents() {
+    this.contentEl.addEventListener("keydown", async (ev) => {
+      if (ev.key === "PageUp") {
+        let curValue = this.priorityComponent.getValue();
+        if (curValue < 95) this.priorityComponent.setValue(curValue + 5);
+        else this.priorityComponent.setValue(100);
+      } else if (ev.key === "PageDown") {
+        let curValue = this.priorityComponent.getValue();
+        if (curValue > 5) this.priorityComponent.setValue(curValue - 5);
+        else this.priorityComponent.setValue(0);
+      } else if (ev.key === "Enter") {
+        await this.schedule();
+        this.close();
+      }
+    });
+  }
+
+  async schedule() {
+    const nextRepDate = this.parseDate(this.repDateComponent.getValue());
+    if (!nextRepDate) {
+      LogTo.Console("Failed to parse next repetition date!", true);
       return;
     }
+
+    const priority = this.priorityComponent.getValue();
+    const today = new Date();
+    const interval = nextRepDate > today ? DateUtils.dateDifference(nextRepDate, today) : 1
+    this.curRep.nextRepDate = nextRepDate;
+    this.curRep.priority = priority;
+    this.curRep.interval = interval;
+    await this.plugin.queue.writeQueueTable(this.table);
   }
 }

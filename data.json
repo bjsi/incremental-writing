@@ -15,6 +15,7 @@
   "skipAddNoteWindow": true,
   "autoAddNewNotes": false,
   "defaultFirstRepDate": "tomorrow",
+  "askForNextRepDate": true,
   "vimMode": false,
   "defaultPriority": 30,
   "queueFilePath": "queue.md",

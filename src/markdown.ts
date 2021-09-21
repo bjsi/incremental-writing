@@ -28,7 +28,6 @@ export class MarkdownTable {
     }
   }
 
-  // TODO: test with blocks, different link settings
   removeDeleted() {
     let queuePath = this.plugin.queue.queuePath;
     let exists = this.rows.filter((r) =>
