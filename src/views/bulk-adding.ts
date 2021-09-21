@@ -8,14 +8,16 @@ import {
   ButtonComponent,
   debounce,
 } from "obsidian";
-import { PriorityUtils } from "../helpers/priority-utils";
 import { ModalBase } from "./modal-base";
 import IW from "../main";
 import { Queue } from "../queue";
 import { FileSuggest } from "./file-suggest";
-import { DateUtils } from "../helpers/date-utils";
+import "../helpers/date-utils";
+import "../helpers/priority-utils";
+import './helpers/number-utils';
 import { MarkdownTableRow } from "../markdown";
 import { LogTo } from "../logger";
+
 
 export class BulkAdderModal extends ModalBase {
   queuePath: string;
@@ -174,7 +176,7 @@ export class BulkAdderModal extends ModalBase {
     //
     // Button
 
-    let inputButton = new ButtonComponent(contentEl)
+    new ButtonComponent(contentEl)
       .setButtonText("Add to IW Queue")
       .onClick(async () => {
         await this.addNotes();
@@ -184,16 +186,11 @@ export class BulkAdderModal extends ModalBase {
   }
 
   datesAreValid(d1: Date, d2: Date) {
-    return DateUtils.isValid(d1) && DateUtils.isValid(d2) && d1 <= d2;
+    return d1.isValid() && d2.isValid() && d1 <= d2;
   }
 
   prioritiesAreValid(p1: number, p2: number) {
-    return PriorityUtils.isValid(p1) && PriorityUtils.isValid(p2) && p1 < p2;
-  }
-
-  roundOff(num: number, places: number) {
-    const x = Math.pow(10, places);
-    return Math.round(num * x) / x;
+    return p1.isValidPriority() && p2.isValidPriority() && p1 < p2;
   }
 
   async addNotes() {
@@ -213,7 +210,7 @@ export class BulkAdderModal extends ModalBase {
     let priStep = (priMax - priMin) / this.toAdd.length;
     let curPriority = priMin;
     let curDate = dateMin;
-    let dateDiff = DateUtils.dateDifference(dateMin, dateMax);
+    let dateDiff = dateMin.daysDifference(dateMax);
     let numToAdd = this.toAdd.length > 0 ? this.toAdd.length : 1;
     let dateStep = dateDiff / numToAdd;
     let curStep = dateStep;
@@ -226,8 +223,8 @@ export class BulkAdderModal extends ModalBase {
       let link = this.plugin.files.toLinkText(file);
       rows.push(new MarkdownTableRow(link, curPriority, "", 1, curDate));
 
-      curPriority = this.roundOff(curPriority + priStep, 2);
-      curDate = DateUtils.addDays(new Date(dateMin), curStep);
+      curPriority = (curPriority + priStep).round(2);
+      curDate = new Date(dateMin).addDays(curStep);
       curStep += dateStep;
     }
 

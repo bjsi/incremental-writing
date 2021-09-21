@@ -8,7 +8,6 @@ import {
 } from "obsidian";
 import IW from "../main";
 import { FileSuggest, FolderSuggest } from "./file-suggest";
-import { PriorityUtils } from "../helpers/priority-utils";
 import { LogTo } from "src/logger";
 
 export class IWSettingsTab extends PluginSettingTab {
@@ -160,7 +159,7 @@ export class IWSettingsTab extends PluginSettingTab {
         comp.setValue(Number(settings.defaultPriorityMin)).onChange((value) => {
           if (this.inputPriorityMax) {
             let num = Number(value);
-            if (!PriorityUtils.isValid(num)) {
+            if (!num.isValidPriority()) {
               return;
             }
 
@@ -185,7 +184,7 @@ export class IWSettingsTab extends PluginSettingTab {
         comp.setValue(Number(settings.defaultPriorityMax)).onChange((value) => {
           if (this.inputPriorityMin) {
             let num = Number(value);
-            if (!PriorityUtils.isValid(num)) {
+            if (!num.isValidPriority()) {
               return;
             }
 

@@ -2,7 +2,6 @@ import {
   normalizePath,
   TFolder,
   MarkdownView,
-  TFile,
   SliderComponent,
   TextComponent,
   ButtonComponent,
@@ -14,14 +13,17 @@ import { FileSuggest } from "./file-suggest";
 import { Queue } from "../queue";
 import { PriorityUtils } from "../helpers/priority-utils";
 import { MarkdownTableRow } from "../markdown";
+import "./helpers/date-utils";
+import "./helpers/number-utils";
 
 abstract class ReviewModal extends ModalBase {
-  title: string;
-  inputSlider: SliderComponent;
-  inputNoteField: TextComponent;
-  inputFirstRep: TextComponent;
-  inputQueueField: TextComponent;
-  titleNode: HTMLElement;
+
+  protected title: string;
+  protected inputSlider: SliderComponent;
+  protected inputNoteField: TextComponent;
+  protected inputFirstRep: TextComponent;
+  protected inputQueueField: TextComponent;
+  protected titleNode: HTMLElement;
 
   constructor(plugin: IW, title: string) {
     super(plugin);
@@ -82,7 +84,7 @@ abstract class ReviewModal extends ModalBase {
     // Button
 
     contentEl.createEl("br");
-    let inputButton = new ButtonComponent(contentEl)
+    new ButtonComponent(contentEl)
       .setButtonText("Add to Queue")
       .onClick(async () => {
         await this.addToOutstanding();

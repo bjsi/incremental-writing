@@ -4,7 +4,6 @@ import { LogTo } from "./logger";
 import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
-import { PriorityUtils } from "./helpers/priority-utils";
 import {EOL} from "os";
 
 export class Queue {

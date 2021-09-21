@@ -1,6 +1,6 @@
-import { DateUtils } from "./helpers/date-utils";
+import "./helpers/date-utils";
+import "./helpers/number-utils";
 import { LinkEx } from "./helpers/link-utils";
-import { PriorityUtils } from "./helpers/priority-utils";
 import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler";
 import IW from "./main";
 import { GrayMatterFile } from "gray-matter";
@@ -198,12 +198,10 @@ export class MarkdownTableRow {
     nextRepDate: Date = new Date("1970-01-01")
   ) {
     this.link = LinkEx.removeBrackets(link);
-    this.priority = PriorityUtils.isValid(priority) ? priority : 30;
+    this.priority = priority.isValidPriority() ? priority : 30;
     this.notes = notes.replace(/(\r\n|\n|\r|\|)/gm, "");
-    this.interval = interval > 0 ? interval : 1;
-    this.nextRepDate = DateUtils.isValid(nextRepDate)
-      ? nextRepDate
-      : new Date("1970-01-01");
+    this.interval = interval.isValidInterval() ? interval : 1;
+    this.nextRepDate = nextRepDate.isValid ? nextRepDate : new Date("1970-01-01");
   }
 
   isDue(): boolean {
@@ -212,7 +210,7 @@ export class MarkdownTableRow {
   }
 
   toString() {
-    let date = DateUtils.formatDate(this.nextRepDate);
+    let date = this.nextRepDate.formatYYMMDD();
     let link = LinkEx.addBrackets(this.link);
     return `| ${link} | ${this.priority} | ${this.notes} | ${this.interval} | ${date} |`;
   }

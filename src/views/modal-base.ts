@@ -1,5 +1,5 @@
 import { Modal } from "obsidian";
-import { DateUtils } from "../helpers/date-utils";
+import "../helpers/date-utils";
 import IW from "../main";
 
 export abstract class ModalBase extends Modal {
@@ -35,10 +35,10 @@ export abstract class ModalBase extends Modal {
 
   parseDate(dateString: string): Date {
     let d1 = this.parseDateAsDate(dateString);
-    if (DateUtils.isValid(d1)) return d1;
+    if (d1.isValid()) return d1;
 
     let d2 = this.parseDateAsNatural(dateString);
-    if (DateUtils.isValid(d2)) return d2;
+    if (d2.isValid()) return d2;
 
     return new Date("1970-01-01");
   }

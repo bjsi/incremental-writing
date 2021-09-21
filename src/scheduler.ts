@@ -1,10 +1,9 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown";
-import { DateUtils } from "./helpers/date-utils";
+import "./helpers/date-utils";
+import './helpers/number-utils'
 
 export abstract class Scheduler {
-  // defaultPriorityMin: number
-  // defaultPriorityMax: number
-  name: string;
+  protected name: string;
   constructor(name: string) {
     this.name = name;
   }
@@ -17,18 +16,13 @@ export class SimpleScheduler extends Scheduler {
     super("simple");
   }
 
-  roundOff(num: number, places: number) {
-    const x = Math.pow(10, places);
-    return Math.round(num * x) / x;
-  }
-
   schedule(table: MarkdownTable, row: MarkdownTableRow) {
     table.addRow(row);
     // spread rows between 0 and 100 priority
     let step = 99.9 / table.rows.length;
     let curPri = step;
     for (let row of table.rows) {
-      row.priority = this.roundOff(curPri, 2);
+      row.priority = curPri.round(2);
       curPri += step;
     }
   }
@@ -41,28 +35,20 @@ scheduler: "${this.name}"
 }
 
 export class AFactorScheduler extends Scheduler {
-  afactor: number;
-  interval: number;
 
-  // TODO:
+  private afactor: number;
+  private interval: number;
+
   constructor(afactor: number = 2, interval: number = 1) {
     super("afactor");
-    this.afactor = this.isValidAFactor(afactor) ? afactor : 2;
-    this.interval = this.isValidInterval(interval) ? interval : 1;
+    this.afactor = afactor.isValidAFactor() ? afactor : 2;
+    this.interval = interval.isValidInterval() ? interval : 1;
   }
 
   schedule(table: MarkdownTable, row: MarkdownTableRow) {
-    row.nextRepDate = DateUtils.addDays(new Date(Date.now()), row.interval);
+    row.nextRepDate = new Date().addDays(row.interval);
     row.interval = this.afactor * row.interval;
     table.addRow(row);
-  }
-
-  isValidAFactor(afactor: number) {
-    return !isNaN(afactor) && afactor >= 0;
-  }
-
-  isValidInterval(interval: number) {
-    return !isNaN(interval) && interval >= 0;
   }
 
   toString() {
