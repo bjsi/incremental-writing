@@ -14,7 +14,7 @@ import { Queue } from "../queue";
 import { FileSuggest } from "./file-suggest";
 import "../helpers/date-utils";
 import "../helpers/priority-utils";
-import './helpers/number-utils';
+import '../helpers/number-utils';
 import { MarkdownTableRow } from "../markdown";
 import { LogTo } from "../logger";
 
