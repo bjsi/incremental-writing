@@ -7,7 +7,7 @@ import {
 } from "obsidian";
 import { ModalBase } from "./modal-base";
 import { MarkdownTableRow, MarkdownTable} from "../markdown";
-import { DateUtils } from "src/helpers/date-utils";
+import "../helpers/date-utils"
 
 export class NextRepScheduler extends ModalBase {
 
@@ -33,7 +33,7 @@ export class NextRepScheduler extends ModalBase {
 
     contentEl.appendText("Next repetition date: ");
     this.repDateComponent = new TextComponent(contentEl).setValue(
-      DateUtils.formatDate(this.curRep.nextRepDate)
+      this.curRep.nextRepDate.formatYYMMDD()
     );
     contentEl.createEl("br");
 
@@ -91,7 +91,7 @@ export class NextRepScheduler extends ModalBase {
 
     const priority = this.priorityComponent.getValue();
     const today = new Date();
-    const interval = nextRepDate > today ? DateUtils.dateDifference(nextRepDate, today) : 1
+    const interval = nextRepDate > today ? nextRepDate.daysDifference(today) : 1
     this.curRep.nextRepDate = nextRepDate;
     this.curRep.priority = priority;
     this.curRep.interval = interval;
