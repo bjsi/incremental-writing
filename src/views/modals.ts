@@ -17,7 +17,6 @@ import "../helpers/date-utils";
 import "../helpers/number-utils";
 
 abstract class ReviewModal extends ModalBase {
-
   protected title: string;
   protected inputSlider: SliderComponent;
   protected inputNoteField: TextComponent;
@@ -51,7 +50,7 @@ abstract class ReviewModal extends ModalBase {
 
     //
     // First Rep Date
-    
+
     const firstRepDate = this.plugin.settings.defaultFirstRepDate;
     contentEl.appendText("First Rep Date: ");
     this.inputFirstRep = new TextComponent(contentEl)
@@ -204,7 +203,6 @@ export class ReviewFileModal extends ReviewModal {
 }
 
 export class ReviewBlockModal extends ReviewModal {
-  
   private customBlockRefInput: TextComponent;
 
   constructor(plugin: IW) {
@@ -213,18 +211,21 @@ export class ReviewBlockModal extends ReviewModal {
 
   onOpen() {
     super.onOpen();
-    let {contentEl} = this;
+    let { contentEl } = this;
     this.customBlockRefInput = new TextComponent(contentEl);
     const br = contentEl.createEl("br");
-    this.titleNode.after("Block Ref Name: ", this.customBlockRefInput.inputEl, br);
+    this.titleNode.after(
+      "Block Ref Name: ",
+      this.customBlockRefInput.inputEl,
+      br
+    );
     this.customBlockRefInput.inputEl.focus();
     this.customBlockRefInput.inputEl.select();
   }
 
   getCurrentLineNumber(): number | null {
-    return (this.app.workspace.activeLeaf.view as MarkdownView).editor
-    	?.getCursor()
-	?.line;
+    return (this.app.workspace.activeLeaf
+      .view as MarkdownView).editor?.getCursor()?.line;
   }
 
   async addToOutstanding() {
@@ -243,17 +244,29 @@ export class ReviewBlockModal extends ReviewModal {
 
     const lineNumber = this.getCurrentLineNumber();
     if (lineNumber === null) {
-	LogTo.Console("Failed to get the current line number.", true);
-	return;
-    }
-    
-    const customRefName = this.customBlockRefInput.getValue();
-    const blockLink = await this.plugin.blocks.createBlockRefIfNotExists(lineNumber, file, customRefName);
-    if (!blockLink || blockLink.length === 0) {
-	    LogTo.Debug("Failed to add block to queue: block link was invalid.");
-	    return;
+      LogTo.Console("Failed to get the current line number.", true);
+      return;
     }
 
-    await queue.add(new MarkdownTableRow(blockLink, this.getPriority(), this.getNotes(), 1, date));
+    const customRefName = this.customBlockRefInput.getValue();
+    const blockLink = await this.plugin.blocks.createBlockRefIfNotExists(
+      lineNumber,
+      file,
+      customRefName
+    );
+    if (!blockLink || blockLink.length === 0) {
+      LogTo.Debug("Failed to add block to queue: block link was invalid.");
+      return;
+    }
+
+    await queue.add(
+      new MarkdownTableRow(
+        blockLink,
+        this.getPriority(),
+        this.getNotes(),
+        1,
+        date
+      )
+    );
   }
 }

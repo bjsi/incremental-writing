@@ -134,8 +134,8 @@ export class MarkdownTable {
   }
 
   sortReps() {
-      this.sortByPriority();
-      this.sortByDue();
+    this.sortByPriority();
+    this.sortByDue();
   }
 
   getReps() {
@@ -196,7 +196,9 @@ export class MarkdownTableRow {
     this.priority = priority.isValidPriority() ? priority : 30;
     this.notes = notes.replace(/(\r\n|\n|\r|\|)/gm, "");
     this.interval = interval.isValidInterval() ? interval : 1;
-    this.nextRepDate = nextRepDate.isValid ? nextRepDate : new Date("1970-01-01");
+    this.nextRepDate = nextRepDate.isValid
+      ? nextRepDate
+      : new Date("1970-01-01");
   }
 
   isDue(): boolean {

@@ -1,16 +1,11 @@
 import IW from "../main";
 import { LogTo } from "../logger";
-import {
-  SliderComponent,
-  TextComponent,
-  ButtonComponent,
-} from "obsidian";
+import { SliderComponent, TextComponent, ButtonComponent } from "obsidian";
 import { ModalBase } from "./modal-base";
-import { MarkdownTableRow, MarkdownTable} from "../markdown";
-import "../helpers/date-utils"
+import { MarkdownTableRow, MarkdownTable } from "../markdown";
+import "../helpers/date-utils";
 
 export class NextRepScheduler extends ModalBase {
-
   private priorityComponent: SliderComponent;
   private repDateComponent: TextComponent;
   private curRep: MarkdownTableRow;
@@ -42,13 +37,13 @@ export class NextRepScheduler extends ModalBase {
 
     //
     // Priority
-  
-  contentEl.appendText("Priority: ");
-  this.priorityComponent = new SliderComponent(contentEl)
-    .setLimits(0, 100, 1)
-    .setValue(this.curRep.priority)
-    .setDynamicTooltip();
-  contentEl.createEl("br");
+
+    contentEl.appendText("Priority: ");
+    this.priorityComponent = new SliderComponent(contentEl)
+      .setLimits(0, 100, 1)
+      .setValue(this.curRep.priority)
+      .setDynamicTooltip();
+    contentEl.createEl("br");
 
     //
     // Button
@@ -91,7 +86,8 @@ export class NextRepScheduler extends ModalBase {
 
     const priority = this.priorityComponent.getValue();
     const today = new Date();
-    const interval = nextRepDate > today ? nextRepDate.daysDifference(today) : 1
+    const interval =
+      nextRepDate > today ? nextRepDate.daysDifference(today) : 1;
     this.curRep.nextRepDate = nextRepDate;
     this.curRep.priority = priority;
     this.curRep.interval = interval;

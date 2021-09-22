@@ -5,7 +5,7 @@ import {
   PluginSettingTab,
   App,
   Setting,
-  debounce
+  debounce,
 } from "obsidian";
 import IW from "../main";
 import { FileSuggest, FolderSuggest } from "./file-suggest";
@@ -87,31 +87,38 @@ export class IWSettingsTab extends PluginSettingTab {
           this.plugin.saveData(settings);
         });
       });
-    
+
     //
     // Default First Rep Date
 
     new Setting(containerEl)
       .setName("Default First Rep Date")
-      .setDesc("Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. Requires that you have installed the nldates plugin.")
+      .setDesc(
+        "Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. Requires that you have installed the nldates plugin."
+      )
       .addText((comp) => {
-	comp.setPlaceholder("Example: today, tomorrow, next week.")
-        const nldates = (<any>this.plugin.app).plugins.getPlugin("nldates-obsidian");
-	comp.disabled = nldates === null;
-        comp.setValue(String(settings.defaultFirstRepDate)).onChange(debounce((value) => {
-
-	  const dateString = String(value);
-	  const date = nldates.parseDate(dateString);
-	  if (date && date.date){
-      LogTo.Debug("Setting default first rep date to " + dateString);
-		  settings.defaultFirstRepDate = dateString;  
-		  this.plugin.saveData(settings);
-	  }
-	  else {
-		  LogTo.Debug("Invalid natural language date string.");
-	  }
-        }, 500, true));
-
+        comp.setPlaceholder("Example: today, tomorrow, next week.");
+        const nldates = (<any>this.plugin.app).plugins.getPlugin(
+          "nldates-obsidian"
+        );
+        comp.disabled = nldates === null;
+        comp.setValue(String(settings.defaultFirstRepDate)).onChange(
+          debounce(
+            (value) => {
+              const dateString = String(value);
+              const date = nldates.parseDate(dateString);
+              if (date && date.date) {
+                LogTo.Debug("Setting default first rep date to " + dateString);
+                settings.defaultFirstRepDate = dateString;
+                this.plugin.saveData(settings);
+              } else {
+                LogTo.Debug("Invalid natural language date string.");
+              }
+            },
+            500,
+            true
+          )
+        );
       });
 
     //
@@ -119,13 +126,15 @@ export class IWSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Ask for Next Repetition Date?")
-      .setDesc("Do you want to be asked to give the next repetition date when you execute the next repetition command?")
+      .setDesc(
+        "Do you want to be asked to give the next repetition date when you execute the next repetition command?"
+      )
       .addToggle((comp) => {
-           comp.setValue(Boolean(settings.askForNextRepDate)).onChange((value) => {
-               settings.askForNextRepDate = Boolean(value);
-               this.plugin.saveData(settings);
-           })
-      })
+        comp.setValue(Boolean(settings.askForNextRepDate)).onChange((value) => {
+          settings.askForNextRepDate = Boolean(value);
+          this.plugin.saveData(settings);
+        });
+      });
 
     //
     // Queue Tags
@@ -157,14 +166,17 @@ export class IWSettingsTab extends PluginSettingTab {
           const split: [string, string[]][] = str
             .split(/\r?\n/)
             .map((line) => line.split("="))
-            .map(([queue, tags]: [string, string]) => [queue, tags.split(",")
-                                                                  .map(s => s.trim())
-                                                                  .filter(s => !isEmpty(s))]);
+            .map(([queue, tags]: [string, string]) => [
+              queue,
+              tags
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => !isEmpty(s)),
+            ]);
 
           let queueTagMap: Record<string, string[]> = {};
           for (let [queue, tags] of split) {
-            if (!isEmpty(queue) && !isEmpty(tags))
-              queueTagMap[queue] = tags;
+            if (!isEmpty(queue) && !isEmpty(tags)) queueTagMap[queue] = tags;
           }
 
           settings.queueTagMap = queueTagMap;
