@@ -7,6 +7,7 @@ import {
   getAllTags,
   debounce,
   TAbstractFile,
+  normalizePath,
 } from "obsidian";
 import { Queue } from "./queue";
 import { LogTo } from "./logger";
@@ -141,7 +142,7 @@ export default class IW extends Plugin {
               const max = this.settings.defaultPriorityMax;
               const priority = this.randomWithinInterval(min, max);
               const row = new MarkdownTableRow(link, priority, "");
-              await queue.addNotesToQueue(row);
+              await queue.add(row);
             }
           }
           // already debounced 2 secs but not throttled, true on resetTimer throttles the callback
@@ -156,7 +157,7 @@ export default class IW extends Plugin {
     if (this.settings.autoAddNewNotes) {
       this.autoAddNewNotesOnCreateEvent = this.app.vault.on(
         "create",
-        (file) => {
+        async (file) => {
           if (!(file instanceof TFile) || file.extension !== "md") {
             return;
           }
@@ -166,7 +167,7 @@ export default class IW extends Plugin {
           let priority = this.randomWithinInterval(min, max);
           let row = new MarkdownTableRow(link, priority, "");
           LogTo.Console("Auto adding new note to default queue: " + link);
-          this.queue.addNotesToQueue(row);
+          await this.queue.add(row);
         }
       );
     } else {
@@ -211,10 +212,10 @@ export default class IW extends Plugin {
   }
 
   async addSearchResultsToQueue() {
-    let files = await this.getSearchResults();
-    let links = files.map((file) => file.path);
-    if (links) {
-      new BulkAdderModal(this, this.queue.queuePath, links).open();
+    const files = await this.getSearchResults();
+    const pairs = files.map((file) => this.links.createAbsoluteLink(normalizePath(file.path), ""));
+    if (pairs && pairs.length > 0) {
+      new BulkAdderModal(this, this.queue.queuePath, "Bulk Add Search Results", pairs).open();
     } else {
       LogTo.Console("No files to add.", true);
     }
@@ -308,10 +309,34 @@ export default class IW extends Plugin {
     // Element Adding.
 
     this.addCommand({
+      id: "bulk-add-blocks",
+      name: "Bulk add blocks with references to queue.",
+      checkCallback: checking => {
+        const file = this.files.getActiveNoteFile();
+        if (file !== null) {
+          if (!checking){
+            const refs = this.app.metadataCache.getFileCache(file).blocks
+            if (!refs) {
+              LogTo.Debug("File does not contain any blocks with references.");
+            }
+            else {
+              const fileLink = this.app.metadataCache.fileToLinktext(file, "", true)
+              const linkPaths = Object.keys(refs)
+                .map(l => fileLink + "#^" + l)
+              new BulkAdderModal(this, this.queue.queuePath, "Bulk Add Block References", linkPaths).open();
+            }
+          }
+		return true
+	      }
+	return false
+      },
+    });
+
+    this.addCommand({
       id: "note-add-iw-queue",
       name: "Add note to queue.",
       checkCallback: (checking: boolean) => {
-        if (this.files.getActiveNoteFile() != null) {
+        if (this.files.getActiveNoteFile() !== null) {
           if (!checking) {
             new ReviewNoteModal(this).open();
           }
@@ -347,18 +372,15 @@ export default class IW extends Plugin {
       id: "add-links-within-note",
       name: "Add links within note to queue.",
       checkCallback: (checking: boolean) => {
-        if (this.files.getActiveNoteFile() != null) {
+	const file = this.files.getActiveNoteFile();
+        if (file !== null) {
           if (!checking) {
-            let file = this.files.getActiveNoteFile();
-            if (file) {
-              let links = this.links.getLinksIn(file);
-              if (links && links.length)
-                new BulkAdderModal(this, this.queue.queuePath, links).open();
-              else {
-                LogTo.Console("No links in the current file.", true);
-              }
-            } else {
-              LogTo.Console("Failed to get the active note.", true);
+            const pairs = this.links.getLinksIn(file);
+            if (pairs && pairs.length > 0){
+              new BulkAdderModal(this, this.queue.queuePath, "Bulk Add Links", pairs).open();
+            }
+            else {
+              LogTo.Console("No links in the current file.", true);
             }
           }
           return true;
@@ -415,14 +437,17 @@ export default class IW extends Plugin {
               .setTitle(`Add Folder to IW Queue`)
               .setIcon("sheets-in-box")
               .onClick((_) => {
-                let files = this.app.vault
+                const pairs = this.app.vault
                   .getMarkdownFiles()
-                  .filter((f) => this.files.isDescendantOf(f, file))
-                  .map((f) => f.path);
+                  .filter(f => this.files.isDescendantOf(f, file))
+                  .map(f => this.links.createAbsoluteLink(normalizePath(f.path), ""))
 
-                if (files) {
-                  new BulkAdderModal(this, this.queue.queuePath, files).open();
-                } else LogTo.Console("Folder contains no files!", true);
+                if (pairs && pairs.length > 0) {
+                  new BulkAdderModal(this, this.queue.queuePath, "Bulk Add Folder Notes", pairs).open();
+                }
+                else {
+                  LogTo.Console("Folder contains no files!", true);
+                }
               });
           });
         }

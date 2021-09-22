@@ -152,7 +152,7 @@ export class Queue {
     });
   }
 
-  async addNotesToQueue(...rows: MarkdownTableRow[]) {
+  async add(...rows: MarkdownTableRow[]) {
     await this.createTableIfNotExists();
     let table = await this.loadTable();
 
@@ -175,61 +175,6 @@ export class Queue {
       LogTo.Console("Added note to queue: " + row.link, true);
     }
 
-    await this.writeQueueTable(table);
-  }
-
-  async addBlockToQueue(
-    priority: number,
-    notes: string,
-    date: Date,
-    blockLine: number,
-    activeNoteFile: TFile,
-    customBlockRefHash: string,
-  ) {
-
-    await this.createTableIfNotExists();
-    let table = await this.loadTable();
-    LogTo.Debug("Add block to queue");
-    let link = this.plugin.app.metadataCache.fileToLinktext(
-      activeNoteFile,
-      "",
-      true
-    );
-
-    let blockRefHash = await this.plugin.blocks.getBlockRefHash(blockLine, activeNoteFile);
-    if (blockRefHash === null) {
-	    LogTo.Console("Error getting block ref hash")
-	    return;
-    }
-    else if (blockRefHash === "") {
-      let oldNoteLines = (await this.plugin.app.vault.read(activeNoteFile))
-	?.split(/\r?\n/) || []
-      blockRefHash = (customBlockRefHash && customBlockRefHash.length !== 0)
-      	? customBlockRefHash
-	: this.plugin.blocks.createBlockHash();
-
-      const idx = blockLine;
-      oldNoteLines[idx] = oldNoteLines[idx] + " ^" + blockRefHash;
-      await this.plugin.app.vault.modify(activeNoteFile, oldNoteLines.join(EOL));
-    }
-
-    link = link + "#^" + blockRefHash;
-
-    if (table.hasRowWithLink(link)) {
-      LogTo.Console("Already in your queue!", true);
-      return;
-    }
-
-    if (link.contains("|")) {
-      LogTo.Console(
-        `Failed to add ${link} because it contains a pipe character.`,
-        true
-      );
-      return;
-    }
-
-    table.addRow(new MarkdownTableRow(link, priority, notes, 1, date));
-    LogTo.Console("Added block to queue: " + link, true);
     await this.writeQueueTable(table);
   }
 

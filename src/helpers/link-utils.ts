@@ -1,6 +1,7 @@
 import { App, TFile } from "obsidian";
 import { ObsidianUtilsBase } from "./obsidian-utils-base";
-import { getLinkpath, normalizePath } from "obsidian";
+import { getLinkpath, parseLinktext } from "obsidian";
+import { LogTo } from "src/logger";
 
 export class LinkEx extends ObsidianUtilsBase {
   constructor(app: App) {
@@ -27,19 +28,30 @@ export class LinkEx extends ObsidianUtilsBase {
     return link;
   }
 
+  // TODO:
   exists(link: string, source: string): boolean {
     let path = getLinkpath(link);
     let file = this.app.metadataCache.getFirstLinkpathDest(path, source);
     return file instanceof TFile;
   }
 
+  createAbsoluteLink(linktext: string, source: string): string | null { 
+	  const {path, subpath} = parseLinktext(linktext);
+	  const file = this.app.metadataCache.getFirstLinkpathDest(path, source);
+	  // has to be set to lower case
+	  // because obsidian link cache
+	  // record keys are lower case
+	  return file !== null 
+		  ? this.app.metadataCache.fileToLinktext(file, "", true) + (subpath.toLowerCase() ?? "")
+		  : null;
+  }
+
   getLinksIn(file: TFile): string[] {
-    let links = this.app.metadataCache.getFileCache(file).links;
-    if (links)
-      return links
-        .map((l) => getLinkpath(l.link))
-        .map((l) => this.app.metadataCache.getFirstLinkpathDest(l, file.path))
-        .map((f) => f.path);
-    return [];
+    const links = this.app.metadataCache.getFileCache(file).links ?? [];
+    const linkPaths = links
+    	.map(link => this.createAbsoluteLink(link.link, file.path))
+	.filter(x => x !== null && x.length > 0);
+    LogTo.Debug("Links: " + linkPaths.toString());
+    return linkPaths;
   }
 }

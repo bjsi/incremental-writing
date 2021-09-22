@@ -1,3 +1,5 @@
+import { LogTo } from "src/logger";
+
 declare global {
 	interface Number {
 		isValidAFactor(): boolean;
@@ -14,7 +16,7 @@ Number.prototype.round = function(places: number): number {
 
 Number.prototype.isValidPriority = function(): boolean {
 	const priority = Number(this);
-	return 0 <= priority && priority <= 100;
+	return !isNaN(priority) && priority >= 0 && priority <= 100;
 }
 
 Number.prototype.isValidAFactor = function(): boolean {

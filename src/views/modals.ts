@@ -161,7 +161,7 @@ export class ReviewNoteModal extends ReviewModal {
       1,
       date
     );
-    await queue.addNotesToQueue(row);
+    await queue.add(row);
   }
 }
 
@@ -198,7 +198,7 @@ export class ReviewFileModal extends ReviewModal {
       1,
       date
     );
-    await queue.addNotesToQueue(row);
+    await queue.add(row);
   }
 }
 
@@ -246,27 +246,13 @@ export class ReviewBlockModal extends ReviewModal {
 	return;
     }
     
-    const blockRefName = this.customBlockRefInput.getValue();
-    if (blockRefName && blockRefName !== "") {
-	    if (!blockRefName.match(/^[=a-zA-Z0-9]+$/)){
-		    LogTo.Debug("Invalid block ref name.", true);
-		    return;
-	    }
-	    // reject if the same block ref name is already used in this file
-	    const refs = this.app.metadataCache.getFileCache(file).blocks
-    	    if (refs && Object.keys(refs).some(ref => ref === blockRefName)) {
-		    LogTo.Debug("This block ref is already used in this file.", true)
-		    return;
-	    }
+    const customRefName = this.customBlockRefInput.getValue();
+    const blockLink = await this.plugin.blocks.createBlockRefIfNotExists(lineNumber, file, customRefName);
+    if (!blockLink || blockLink.length === 0) {
+	    LogTo.Debug("Failed to add block to queue: block link was invalid.");
+	    return;
     }
 
-    await queue.addBlockToQueue(
-      this.getPriority(),
-      this.getNotes(),
-      date,
-      lineNumber,
-      file,
-      blockRefName
-    );
+    await queue.add(new MarkdownTableRow(blockLink, this.getPriority(), this.getNotes(), 1, date));
   }
 }

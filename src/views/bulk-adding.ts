@@ -1,9 +1,7 @@
 import {
   normalizePath,
   TFolder,
-  TFile,
   SliderComponent,
-  Notice,
   TextComponent,
   ButtonComponent,
   debounce,
@@ -12,92 +10,75 @@ import { ModalBase } from "./modal-base";
 import IW from "../main";
 import { Queue } from "../queue";
 import { FileSuggest } from "./file-suggest";
-import "../helpers/date-utils";
-import "../helpers/priority-utils";
-import '../helpers/number-utils';
 import { MarkdownTableRow } from "../markdown";
 import { LogTo } from "../logger";
-
+import "../helpers/number-utils.ts"
+import "../helpers/date-utils.ts"
+import "../helpers/str-utils.ts"
 
 export class BulkAdderModal extends ModalBase {
-  queuePath: string;
 
-  inputFolderField: TextComponent;
-  noteCountDiv: HTMLDivElement;
+  private queuePath: string;
+  private queueComponent: TextComponent;
+  private minPriorityComponent: SliderComponent;
+  private maxPriorityComponent: SliderComponent;
+  private inputFirstRepMin: TextComponent;
+  private inputFirstRepMax: TextComponent;
+  private toAddCountDiv: HTMLDivElement;
+  private outstanding: Set<string>;
+  private toAdd: string[] = [];
+  private linkPaths: string[];
+  private title: string;
 
-  //
-  // Queue
-
-  inputQueueField: TextComponent;
-
-  //
-  // Priorities
-
-  inputPriorityMin: SliderComponent;
-  inputPriorityMax: SliderComponent;
-
-  //
-  // First Rep
-
-  inputFirstRepMin: TextComponent;
-  inputFirstRepMax: TextComponent;
-
-  linkPaths: string[];
-  outstanding: Set<string> = new Set<string>();
-  toAdd: string[] = [];
-
-  constructor(plugin: IW, queuePath: string, linkPaths: string[]) {
+  constructor(plugin: IW, queuePath: string, title: string, linkPaths: string[]){
     super(plugin);
-    this.linkPaths = linkPaths;
     this.queuePath = queuePath;
-  }
-
-  async updateOutstanding() {
-    let queuePath = normalizePath(this.getQueuePath());
-    let outstanding = new Set<string>();
-    if (await this.plugin.app.vault.adapter.exists(queuePath)) {
-      let queue = new Queue(this.plugin, queuePath);
-      let table = await queue.loadTable();
-      let alreadyAdded = table
-        .getReps()
-        .map((r) => normalizePath(r.link + ".md"));
-      for (let added of alreadyAdded) {
-        outstanding.add(added);
-      }
-    }
-    this.outstanding = outstanding;
+    this.title = title;
+    this.linkPaths = linkPaths;
   }
 
   async updateToAdd() {
     await this.updateOutstanding();
     this.toAdd = this.linkPaths
-      .filter((link) => !this.outstanding.has(link))
-      .map((link) => normalizePath(link));
-    this.noteCountDiv.innerText =
-      "Notes (excluding duplicates): " + this.toAdd.length;
+      .filter((pair) => !this.outstanding.has(pair));
+    this.toAddCountDiv.innerText =
+      "To Add (excluding duplicates): " + this.toAdd.length;
   }
 
-  getQueuePath() {
-    let queue = this.inputQueueField.getValue();
-    if (!queue.endsWith(".md")) queue += ".md";
+  async updateOutstanding() {
+    const queuePath = this.getQueuePath();
+    if (await this.plugin.app.vault.adapter.exists(queuePath)) {
+      const queue = new Queue(this.plugin, queuePath);
+      const table = await queue.loadTable();
+      const alreadyAdded = table
+        .getReps()
+        .map((rep) => this.plugin.links.createAbsoluteLink(rep.link, queuePath));
+      this.outstanding = new Set<string>(alreadyAdded);
+    }
+    else {
+	    this.outstanding = new Set<string>();
+    }
+  }
 
-    return normalizePath(
-      [this.plugin.settings.queueFolderPath, queue].join("/")
-    );
+  protected getQueuePath() {
+	  let queue = this.queueComponent.getValue().withExtension(".md");
+	  return normalizePath(
+		  [this.plugin.settings.queueFolderPath, queue].join("/")
+	  );
   }
 
   async onOpen() {
     let { contentEl } = this;
 
-    contentEl.createEl("h3", { text: "Bulk Add Notes to Queue" });
+    contentEl.createEl("h3", { text: this.title });
 
     //
     // Queue
 
     contentEl.appendText("Queue: ");
-    this.inputQueueField = new TextComponent(contentEl)
+    this.queueComponent = new TextComponent(contentEl)
       .setPlaceholder("Example: queue.md")
-      .setValue(this.plugin.settings.queueFileName)
+      .setValue(this.plugin.files.getTFile(this.queuePath).name)
       .onChange(
         debounce(
           (_: string) => {
@@ -111,13 +92,13 @@ export class BulkAdderModal extends ModalBase {
       this.plugin.app.vault.getAbstractFileByPath(
         this.plugin.settings.queueFolderPath
       ) as TFolder;
-    new FileSuggest(this.plugin, this.inputQueueField.inputEl, folderFunc);
+    new FileSuggest(this.plugin, this.queueComponent.inputEl, folderFunc);
     contentEl.createEl("br");
 
     //
     // Note Count
 
-    this.noteCountDiv = contentEl.createDiv();
+    this.toAddCountDiv = contentEl.createDiv();
     await this.updateToAdd();
 
     //
@@ -126,13 +107,13 @@ export class BulkAdderModal extends ModalBase {
     // Min
 
     this.contentEl.appendText("Min Priority: ");
-    this.inputPriorityMin = new SliderComponent(contentEl)
+    this.minPriorityComponent = new SliderComponent(contentEl)
       .setLimits(0, 100, 1)
       .setDynamicTooltip()
       .onChange((value) => {
-        if (this.inputPriorityMax) {
-          let max = this.inputPriorityMax.getValue();
-          if (value > max) this.inputPriorityMax.setValue(value);
+        if (this.maxPriorityComponent) {
+          let max = this.maxPriorityComponent.getValue();
+          if (value > max) this.maxPriorityComponent.setValue(value);
         }
       })
       .setValue(0);
@@ -141,20 +122,20 @@ export class BulkAdderModal extends ModalBase {
     // Max
 
     this.contentEl.appendText("Max Priority: ");
-    this.inputPriorityMax = new SliderComponent(contentEl)
+    this.maxPriorityComponent = new SliderComponent(contentEl)
       .setLimits(0, 100, 1)
       .setDynamicTooltip()
       .onChange((value) => {
-        if (this.inputPriorityMin) {
-          let min = this.inputPriorityMin.getValue();
-          if (value < min) this.inputPriorityMin.setValue(value);
+        if (this.minPriorityComponent) {
+          let min = this.minPriorityComponent.getValue();
+          if (value < min) this.minPriorityComponent.setValue(value);
         }
       })
       .setValue(100);
     this.contentEl.createEl("br");
 
     //
-    // First Reps
+    // Rep Dates
 
     this.contentEl.appendText("Earliest Rep Date: ");
     this.inputFirstRepMin = new TextComponent(contentEl).setValue("1970-01-01");
@@ -163,13 +144,12 @@ export class BulkAdderModal extends ModalBase {
     this.contentEl.appendText("Latest Rep Date: ");
     this.inputFirstRepMax = new TextComponent(contentEl).setValue("1970-01-01");
     this.contentEl.createEl("br");
-
     //
     // Events
 
     contentEl.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") {
-        this.addNotes();
+        this.add();
       }
     });
 
@@ -179,34 +159,37 @@ export class BulkAdderModal extends ModalBase {
     new ButtonComponent(contentEl)
       .setButtonText("Add to IW Queue")
       .onClick(async () => {
-        await this.addNotes();
+        await this.add();
         this.close();
         return;
       });
   }
 
-  datesAreValid(d1: Date, d2: Date) {
-    return d1.isValid() && d2.isValid() && d1 <= d2;
-  }
+  async add() {
+    if (this.toAdd.length === 0){
+	    LogTo.Debug("Nothing to add (excluding duplicates).", true);
+	    return;
+    }
 
-  prioritiesAreValid(p1: number, p2: number) {
-    return p1.isValidPriority() && p2.isValidPriority() && p1 < p2;
-  }
+    const priMin = Number(this.minPriorityComponent.getValue());
+    const priMax = Number(this.maxPriorityComponent.getValue());
+    const dateMin = this.parseDate(this.inputFirstRepMin.getValue());
+    const dateMax = this.parseDate(this.inputFirstRepMax.getValue());
 
-  async addNotes() {
-    let priMin = Number(this.inputPriorityMin.getValue());
-    let priMax = Number(this.inputPriorityMax.getValue());
-    let dateMin = this.parseDate(this.inputFirstRepMin.getValue());
-    let dateMax = this.parseDate(this.inputFirstRepMax.getValue());
-
-    if (
-      !this.prioritiesAreValid(priMin, priMax) ||
-      !this.datesAreValid(dateMin, dateMax)
-    ) {
-      new Notice("Failed: invalid data!");
+    if (!(priMin.isValidPriority() && priMax.isValidPriority() && priMin <= priMax)) {
+      LogTo.Debug("Min: " + priMin.toString());
+      LogTo.Debug("Max: " + priMax.toString());
+      LogTo.Debug("Failed to add: priority data is invalid.", true);
       this.close();
       return;
     }
+
+    if (!(dateMin.isValid() && dateMax.isValid() && dateMin <= dateMax)) {
+      LogTo.Debug("Failed to add: date data is invalid!", true);
+      this.close();
+      return;
+    }
+
     let priStep = (priMax - priMin) / this.toAdd.length;
     let curPriority = priMin;
     let curDate = dateMin;
@@ -215,19 +198,16 @@ export class BulkAdderModal extends ModalBase {
     let dateStep = dateDiff / numToAdd;
     let curStep = dateStep;
 
-    let queue = new Queue(this.plugin, this.getQueuePath());
-    let rows: MarkdownTableRow[] = [];
+    const queuePath = this.getQueuePath();
+    const queue = new Queue(this.plugin, queuePath);
+    const rows: MarkdownTableRow[] = [];
     LogTo.Console("To add: " + this.toAdd);
-    for (let note of this.toAdd) {
-      let file = this.plugin.app.vault.getAbstractFileByPath(note) as TFile;
-      let link = this.plugin.files.toLinkText(file);
+    for (let link of this.toAdd) {
       rows.push(new MarkdownTableRow(link, curPriority, "", 1, curDate));
-
       curPriority = (curPriority + priStep).round(2);
       curDate = new Date(dateMin).addDays(curStep);
       curStep += dateStep;
     }
-
-    await queue.addNotesToQueue(...rows);
+    await queue.add(...rows);
   }
 }
