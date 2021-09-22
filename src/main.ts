@@ -85,9 +85,8 @@ export default class IW extends Plugin {
     this.registerCommands();
     this.subscribeToEvents();
     this.createStatusBar();
-    let queuePath = this.getDefaultQueuePath();
-    this.queue = new Queue(this, queuePath);
-    this.statusBar.updateCurrentQueue(queuePath);
+    const queuePath = this.getDefaultQueuePath();
+    await this.loadQueue(queuePath);
   }
 
   randomWithinInterval(min: number, max: number) {
@@ -221,10 +220,13 @@ export default class IW extends Plugin {
     }
   }
 
-  loadQueue(filePath: string) {
-    if (filePath) {
+  async loadQueue(filePath: string) {
+    if (filePath && filePath.length > 0) {
       this.statusBar.updateCurrentQueue(filePath);
       this.queue = new Queue(this, filePath);
+      const table = await this.queue.loadTable();
+      const currentRep = table.currentRep();
+      this.statusBar.updateCurrentRep(currentRep);
       LogTo.Console("Loaded Queue: " + filePath, true);
     } else {
       LogTo.Console("Failed to load queue: " + filePath, true);

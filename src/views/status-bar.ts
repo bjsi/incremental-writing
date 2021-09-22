@@ -1,16 +1,16 @@
 import { MarkdownTableRow } from "../markdown";
+import { parseLinktext } from "obsidian";
 import IW from "../main";
 
 export class StatusBar {
-  statusBarAdded: boolean;
-  statusBar: HTMLElement;
-  statusBarText: HTMLSpanElement;
+  private statusBarAdded: boolean;
+  private statusBar: HTMLElement;
 
-  repText: HTMLSpanElement;
-  priorityText: HTMLSpanElement;
-  queueText: HTMLSpanElement;
+  private repText: HTMLSpanElement;
+  private priorityText: HTMLSpanElement;
+  private queueText: HTMLSpanElement;
 
-  plugin: IW;
+  private plugin: IW;
 
   constructor(statusBar: HTMLElement, plugin: IW) {
     this.statusBar = statusBar;
@@ -23,9 +23,6 @@ export class StatusBar {
     }
 
     let status = this.statusBar.createEl("div", { prepend: true });
-    this.statusBarText = status.createEl("span", {
-      cls: ["status-bar-item-segment"],
-    });
     this.repText = status.createEl("span", {
       cls: ["status-bar-item-segment"],
     });
@@ -51,16 +48,16 @@ export class StatusBar {
   }
 
   updateCurrentRep(row: MarkdownTableRow) {
-    if (row) {
-      let link = row.link;
-      let file = this.plugin.files.getTFile(link + ".md");
-      if (file) {
-        this.updateCurrentPriority(row.priority);
-        this.repText.innerText = "IW Rep: " + file.basename;
-        return;
-      }
-    }
-
-    this.repText.innerText = "Current Rep: None.";
+	  if (row) {
+		  const {path, subpath} = parseLinktext(row.link);
+		  const file = this.plugin.app.metadataCache.getFirstLinkpathDest(path, this.plugin.queue.queuePath);
+		  if (file){
+			  this.updateCurrentPriority(row.priority);
+			  this.repText.innerText = "IW Rep: " + file.name.substr(0, file.name.length-3) + subpath;
+		  }
+	  }
+	  else {
+		  this.repText.innerText = "IW Rep: None.";
+	  }
   }
 }
