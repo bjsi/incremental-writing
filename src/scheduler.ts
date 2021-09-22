@@ -1,6 +1,6 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown";
 import "./helpers/date-utils";
-import './helpers/number-utils'
+import "./helpers/number-utils";
 
 export abstract class Scheduler {
   protected name: string;
@@ -35,7 +35,6 @@ scheduler: "${this.name}"
 }
 
 export class AFactorScheduler extends Scheduler {
-
   private afactor: number;
   private interval: number;
 

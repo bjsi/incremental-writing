@@ -48,16 +48,19 @@ export class StatusBar {
   }
 
   updateCurrentRep(row: MarkdownTableRow) {
-	  if (row) {
-		  const {path, subpath} = parseLinktext(row.link);
-		  const file = this.plugin.app.metadataCache.getFirstLinkpathDest(path, this.plugin.queue.queuePath);
-		  if (file){
-			  this.updateCurrentPriority(row.priority);
-			  this.repText.innerText = "IW Rep: " + file.name.substr(0, file.name.length-3) + subpath;
-		  }
-	  }
-	  else {
-		  this.repText.innerText = "IW Rep: None.";
-	  }
+    if (row) {
+      const { path, subpath } = parseLinktext(row.link);
+      const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
+        path,
+        this.plugin.queue.queuePath
+      );
+      if (file) {
+        this.updateCurrentPriority(row.priority);
+        this.repText.innerText =
+          "IW Rep: " + file.name.substr(0, file.name.length - 3) + subpath;
+      }
+    } else {
+      this.repText.innerText = "IW Rep: None.";
+    }
   }
 }

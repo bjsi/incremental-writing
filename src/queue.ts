@@ -4,7 +4,7 @@ import { LogTo } from "./logger";
 import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
-import {EOL} from "os";
+import { EOL } from "os";
 import { NextRepScheduler } from "./views/next-rep-schedule";
 
 export class Queue {
@@ -141,7 +141,7 @@ export class Queue {
     await this.writeQueueTable(table);
 
     if (this.plugin.settings.askForNextRepDate) {
-	new NextRepScheduler(this.plugin, currentRep, table).open();
+      new NextRepScheduler(this.plugin, currentRep, table).open();
     }
     return true;
   }

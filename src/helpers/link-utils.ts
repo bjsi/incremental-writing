@@ -35,22 +35,23 @@ export class LinkEx extends ObsidianUtilsBase {
     return file instanceof TFile;
   }
 
-  createAbsoluteLink(linktext: string, source: string): string | null { 
-	  const {path, subpath} = parseLinktext(linktext);
-	  const file = this.app.metadataCache.getFirstLinkpathDest(path, source);
-	  // has to be set to lower case
-	  // because obsidian link cache
-	  // record keys are lower case
-	  return file !== null 
-		  ? this.app.metadataCache.fileToLinktext(file, "", true) + (subpath.toLowerCase() ?? "")
-		  : null;
+  createAbsoluteLink(linktext: string, source: string): string | null {
+    const { path, subpath } = parseLinktext(linktext);
+    const file = this.app.metadataCache.getFirstLinkpathDest(path, source);
+    // has to be set to lower case
+    // because obsidian link cache
+    // record keys are lower case
+    return file !== null
+      ? this.app.metadataCache.fileToLinktext(file, "", true) +
+          (subpath.toLowerCase() ?? "")
+      : null;
   }
 
   getLinksIn(file: TFile): string[] {
     const links = this.app.metadataCache.getFileCache(file).links ?? [];
     const linkPaths = links
-    	.map(link => this.createAbsoluteLink(link.link, file.path))
-	.filter(x => x !== null && x.length > 0);
+      .map((link) => this.createAbsoluteLink(link.link, file.path))
+      .filter((x) => x !== null && x.length > 0);
     LogTo.Debug("Links: " + linkPaths.toString());
     return linkPaths;
   }
