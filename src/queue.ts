@@ -1,10 +1,8 @@
 import { MarkdownTable, MarkdownTableRow } from "./markdown";
-import { TFile } from "obsidian";
 import { LogTo } from "./logger";
 import IW from "./main";
 import matter from "gray-matter";
 import { GrayMatterFile } from "gray-matter";
-import { EOL } from "os";
 import { NextRepScheduler } from "./views/next-rep-schedule";
 
 export class Queue {
@@ -27,15 +25,15 @@ export class Queue {
   }
 
   async changePriority(n: number) {
-    let table = await this.loadTable();
+    const table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Debug("No repetitions!", true);
       return;
     }
 
-    let curRep = table.currentRep();
+    const curRep = table.currentRep();
     if (!curRep) {
-      LogTo.Debug("No repetitions!", true);
+      LogTo.Debug("No current repetition!", true);
       return;
     }
 
@@ -49,7 +47,6 @@ export class Queue {
     curRep.priority = newPriority;
     await this.writeQueueTable(table);
     this.plugin.statusBar.updateCurrentPriority(newPriority);
-    LogTo.Debug(`Priority updated to: ${newPriority}`, true);
   }
 
   async dismissCurrent() {
