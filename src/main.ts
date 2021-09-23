@@ -86,8 +86,6 @@ export default class IW extends Plugin {
     this.registerCommands();
     this.subscribeToEvents();
     this.createStatusBar();
-    const queuePath = this.getDefaultQueuePath();
-    await this.loadQueue(queuePath);
   }
 
   randomWithinInterval(min: number, max: number) {
@@ -453,7 +451,9 @@ export default class IW extends Plugin {
   }
 
   subscribeToEvents() {
-    this.app.workspace.onLayoutReady(() => {
+    this.app.workspace.onLayoutReady(async () => {
+      const queuePath = this.getDefaultQueuePath();
+      await this.loadQueue(queuePath);
       this.createTagMap();
       this.checkTagsOnModified();
       this.addSearchButton();
