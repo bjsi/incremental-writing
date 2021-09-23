@@ -1,8 +1,4 @@
-import {
-  SliderComponent,
-  TextComponent,
-  ButtonComponent,
-} from "obsidian";
+import { SliderComponent, TextComponent, ButtonComponent } from "obsidian";
 import IW from "../main";
 import { ModalBase } from "./modal-base";
 import { LogTo } from "../logger";
@@ -54,37 +50,37 @@ export class EditDataModal extends ModalBase {
 
     //
     // Interval
-    
+
     contentEl.appendText("Interval: ");
-    this.intervalInput = new TextComponent(contentEl)
-    	.setValue(this.currentRep.interval.toString())
+    this.intervalInput = new TextComponent(contentEl).setValue(
+      this.currentRep.interval.toString()
+    );
     contentEl.createEl("br");
 
     //
     // Notes
 
     contentEl.appendText("Notes: ");
-    this.inputNoteField = new TextComponent(contentEl)
-    	.setValue(this.currentRep.notes);
+    this.inputNoteField = new TextComponent(contentEl).setValue(
+      this.currentRep.notes
+    );
     contentEl.createEl("br");
 
     //
     // Button
 
     contentEl.createEl("br");
-    new ButtonComponent(contentEl)
-      .setButtonText("Update")
-      .onClick(async () => {
-        await this.updateRepData();
-        this.close();
-      });
+    new ButtonComponent(contentEl).setButtonText("Update").onClick(async () => {
+      await this.updateRepData();
+      this.close();
+    });
 
     this.subscribeToEvents();
   }
 
   async updateStatusBar() {
-        const curRep = (await this.plugin.queue.loadTable())?.currentRep();
-	this.plugin.statusBar.updateCurrentRep(curRep);
+    const curRep = (await this.plugin.queue.loadTable())?.currentRep();
+    this.plugin.statusBar.updateCurrentRep(curRep);
   }
 
   async updateRepData() {
@@ -103,8 +99,8 @@ export class EditDataModal extends ModalBase {
     const priority = this.inputSlider.getValue();
     const notes = this.inputNoteField.getValue();
     if (notes.contains("|")) {
-	    LogTo.Console("Repetition notes contain illegal character '|'.", true);
-	    return;
+      LogTo.Console("Repetition notes contain illegal character '|'.", true);
+      return;
     }
 
     this.currentRep.nextRepDate = date;

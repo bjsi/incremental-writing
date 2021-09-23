@@ -300,7 +300,7 @@ export default class IW extends Plugin {
           LogTo.Debug("No current repetition!", true);
           return;
         }
-        
+
         new EditDataModal(this, curRep, table).open();
       },
       hotkeys: [],
