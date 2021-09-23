@@ -39,7 +39,7 @@ export class StatusBar {
     if (queue) {
       let name = queue.split("/")[1];
       if (name.endsWith(".md")) name = name.substr(0, name.length - 3);
-      this.queueText.innerText = "IW Queue: " + name;
+      this.queueText.innerText = "Queue: " + name;
     }
   }
 
@@ -57,10 +57,10 @@ export class StatusBar {
       if (file) {
         this.updateCurrentPriority(row.priority);
         this.repText.innerText =
-          "IW Rep: " + file.name.substr(0, file.name.length - 3) + subpath;
+          "Rep: " + file.name.substr(0, file.name.length - 3) + subpath;
       }
     } else {
-      this.repText.innerText = "IW Rep: None.";
+      this.repText.innerText = "Rep: None.";
     }
   }
 }
