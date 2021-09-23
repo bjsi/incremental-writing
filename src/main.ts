@@ -84,7 +84,6 @@ export default class IW extends Plugin {
     this.addSettingTab(new IWSettingsTab(this.app, this));
     this.registerCommands();
     this.subscribeToEvents();
-    this.createStatusBar();
   }
 
   randomWithinInterval(min: number, max: number) {
@@ -435,6 +434,7 @@ export default class IW extends Plugin {
 
   subscribeToEvents() {
     this.app.workspace.onLayoutReady(async () => {
+      this.createStatusBar();
       const queuePath = this.getDefaultQueuePath();
       await this.loadQueue(queuePath);
       this.createTagMap();
