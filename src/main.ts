@@ -26,6 +26,7 @@ import { BulkAdderModal } from "./views/bulk-adding";
 import { BlockUtils } from "./helpers/block-utils";
 import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
 import { MarkdownTableRow } from "./markdown";
+import { EditDataModal } from "./views/edit-data";
 
 export default class IW extends Plugin {
   public settings: IWSettings;
@@ -285,34 +286,23 @@ export default class IW extends Plugin {
     });
 
     this.addCommand({
-      id: "increase-priority-small",
-      name: "Increase Priority (small)",
-      callback: () => {
-        this.queue.changePriority(0.1);
+      id: "edit-current-rep-data",
+      name: "Edit current rep data. ",
+      callback: async () => {
+        const table = await this.queue.loadTable();
+        if (!table || !table.hasReps()) {
+          LogTo.Debug("No repetitions!", true);
+          return;
+        }
+
+        const curRep = table.currentRep();
+        if (!curRep) {
+          LogTo.Debug("No current repetition!", true);
+          return;
+        }
+        
+        new EditDataModal(this, curRep, table).open();
       },
-      hotkeys: [],
-    });
-
-    this.addCommand({
-      id: "decrease-priority-small",
-      name: "Decrease Priority (small)",
-      callback: () => this.queue.changePriority(-0.1),
-      hotkeys: [],
-    });
-
-    this.addCommand({
-      id: "increase-priority-large",
-      name: "Increase Priority (large)",
-      callback: () => {
-        this.queue.changePriority(5);
-      },
-      hotkeys: [],
-    });
-
-    this.addCommand({
-      id: "decrease-priority-large",
-      name: "Decrease Priority (large)",
-      callback: () => this.queue.changePriority(-5),
       hotkeys: [],
     });
 
