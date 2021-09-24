@@ -1,12 +1,15 @@
-# Obsidian Incremental Writing Plugin
+# Incremental Writing Plugin for Obsidian
 
-This plugin allows you to do [incremental writing](https://supermemo.guru/wiki/Incremental_writing) in Obsidian. In incremental writing you add notes and blocks to prioritised queues to be reviewed incrementally over time.
+This plugin allows you to do [incremental writing](https://supermemo.guru/wiki/Incremental_writing) in Obsidian. In incremental writing you add notes and blocks from your Obsidian vault to prioritised queues to be reviewed incrementally over time.
 
-To learn more about the ideas behind incremental writing, check out [this video I made](https://youtu.be/LLS_8Y744lk).
+If you are interested in learning more about this plugin and incremental writing in general, here are some resources you may find useful:
 
-To learn the basic features of the Obsidian incremental writing plugin, check out the [getting started video](https://youtu.be/bFF3umvXydQ).
+- (Video) [What is Incremental Writing? (Obsidian and SuperMemo)](https://youtu.be/LLS_8Y744lk): A video I made to introduce the concept of incremental writing with examples in Obsidian and SuperMemo.
+- (Article) [Incremental Writing: A Summary](https://www.experimental-learning.com/SimpleGuru/IncrementalWriting.md): An article version of the above video.
+- (Video) [Obsidian Incremental Writing Plugin: Getting Started](https://youtu.be/bFF3umvXydQ): A video I made to explain the basic features of this plugin.
+- (Video) [Obsidian Incremental Writing Plugin: Advanced Stuff](https://youtu.be/onvKkHQfOzU): A video I made to explain some of the advanced features 
 
-To learn about the more advanced features like using multiple queues, check out [this video](https://youtu.be/onvKkHQfOzU).
+Also, if you find incremental writing useful, you should definitely check out [incremental reading](https://www.experimental-learning.com/en/SimpleGuru/IncrementalReading)!
 
 ### Support
 
@@ -19,7 +22,6 @@ If you would like to support my work, I have a [Patreon page](https://www.patreo
 ### Notes
 
 - This plugin adds a button to the search pane using private Obsidian APIs which could cause the plugin to break when Obsidian updates until I have time to fix it.
-- If you are using Vim mode, adding a block to the queue must be done with a hotkey because using ctrl+p to open the command palette causes the cursor to move up a line, so the wrong block will get added.
 - If you have installed the nldates plugin, you can use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks".
 
 There are currently 10 hotkey / command palette commands and a couple of buttons and context menu commands.
@@ -45,7 +47,7 @@ There are currently two scheduling styles to choose from: A-Factor and Simple.
 
 ### Simple
 
-When you hit next repetition, the current repetition gets pushed to the end of the queue.
+When you hit next repetition, the current repetition gets pushed to the end of the queue by setting its priority to 99.
 
 ### A-Factor
 
