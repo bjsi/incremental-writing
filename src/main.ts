@@ -230,16 +230,15 @@ export default class IW extends Plugin {
     }
   }
 
-  async loadQueue(filePath: string) {
-    if (filePath && filePath.length > 0) {
-      this.statusBar.updateCurrentQueue(filePath);
-      this.queue = new Queue(this, filePath);
+  async loadQueue(file: string) {
+    if (file && file.length > 0) {
       const table = await this.queue.loadTable();
-      const currentRep = table.currentRep();
-      this.statusBar.updateCurrentRep(currentRep);
-      LogTo.Console("Loaded Queue: " + filePath, true);
+      this.statusBar.updateCurrentRep(table?.currentRep());
+      this.queue = new Queue(this, file);
+      this.statusBar.updateCurrentQueue(file);
+      LogTo.Console("Loaded Queue: " + file, true);
     } else {
-      LogTo.Console("Failed to load queue: " + filePath, true);
+      LogTo.Console("Failed to load queue.", true);
     }
   }
 
