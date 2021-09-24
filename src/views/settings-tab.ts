@@ -94,26 +94,28 @@ export class IWSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Default First Rep Date")
       .setDesc(
-        "Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. Requires that you have installed the nldates plugin."
+        "Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. **Requires that you have installed the Natural Language Dates plugin.**"
       )
       .addText((comp) => {
         comp.setPlaceholder("Example: today, tomorrow, next week.");
         const nldates = (<any>this.plugin.app).plugins.getPlugin(
           "nldates-obsidian"
         );
-        comp.disabled = nldates == null;
+        const hasNlDates = nldates != null;
         comp.setValue(String(settings.defaultFirstRepDate)).onChange(
           debounce(
             (value) => {
-              const dateString = String(value);
-              const date = nldates.parseDate(dateString);
-              if (date && date.date) {
-                LogTo.Debug("Setting default first rep date to " + dateString);
-                settings.defaultFirstRepDate = dateString;
-                this.plugin.saveData(settings);
-              } else {
-                LogTo.Debug("Invalid natural language date string.");
-              }
+	      if (hasNlDates) {
+		      const dateString = String(value);
+		      const date = nldates.parseDate(dateString);
+		      if (date && date.date) {
+			      LogTo.Debug("Setting default first rep date to " + dateString);
+			      settings.defaultFirstRepDate = dateString;
+			      this.plugin.saveData(settings);
+		      } else {
+			      LogTo.Debug("Invalid natural language date string.");
+		      }
+	      }
             },
             500,
             true
@@ -146,7 +148,7 @@ export class IWSettingsTab extends PluginSettingTab {
       )
       .addTextArea((textArea) => {
         textArea.setPlaceholder(
-          "Example: IW-Queue=iw,writing\nTasks=tasks,todo"
+          "Example:\nIW-Queue=iw,writing\nTasks=tasks,todo"
         );
         const currentValue = Object.entries(settings.queueTagMap)
           .map(
@@ -155,9 +157,14 @@ export class IWSettingsTab extends PluginSettingTab {
           .join("\n");
 
         textArea.setValue(currentValue).onChange((value) => {
-          let str = String(value).trim();
-          if (!str) return;
-          if (!str.split(/\r?\n/).every((line) => line.match(/(.+)=(.+,?)+/))) {
+          const str = String(value).trim();
+          if (!str) {
+		LogTo.Debug("Setting the queue tag map to empty.");
+		settings.queueTagMap = {};
+		this.plugin.saveData(settings);
+		return;
+	  }
+          else if (!str.split(/\r?\n/).every((line) => line.match(/(.+)=(.+,?)+/))) {
             LogTo.Debug("Invalid queue tag map. Not saving.");
             return;
           }

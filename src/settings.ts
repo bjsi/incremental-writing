@@ -12,7 +12,7 @@ export interface IWSettings {
 }
 
 export const DefaultSettings: IWSettings = {
-  queueTagMap: { "IW-Queue": ["iw-queue"] },
+  queueTagMap: {},
   defaultPriorityMin: 10,
   defaultPriorityMax: 50,
   queueFolderPath: "IW-Queues",
