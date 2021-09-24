@@ -16,7 +16,7 @@ export class BlockUtils extends ObsidianUtilsBase {
     }
     const match = noteLines[lineNumber].match(/(.+)( \^[=a-zA-Z0-9]+)$/);
     LogTo.Debug(JSON.stringify(match));
-    return match ? match[3] : "";
+    return match && match.length == 3 ? match[2].trim() : "";
   }
 
   async createBlockRefIfNotExists(
@@ -30,7 +30,7 @@ export class BlockUtils extends ObsidianUtilsBase {
     } else if (blockRef !== "") {
       return (
         this.app.metadataCache.fileToLinktext(noteFile, "", true) +
-        "#^" +
+        "#" +
         blockRef
       );
     } else {
