@@ -128,13 +128,21 @@ export class Queue {
 
     let repToLoad = null;
 
+
     if (currentRep && !nextRep) {
-      repToLoad = currentRep;
+      // currentRep not necessarily due
+      // after scheduling
+      if (currentRep.isDue())
+        repToLoad = currentRep;
     } else if (currentRep && nextRep) {
       repToLoad = nextRep.isDue() ? nextRep : currentRep;
     }
 
-    await this.loadRep(repToLoad);
+    if (repToLoad)
+      await this.loadRep(repToLoad);
+    else
+      LogTo.Debug("No more repetitions!", true);
+
     await this.writeQueueTable(table);
 
     if (this.plugin.settings.askForNextRepDate) {
