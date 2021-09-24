@@ -106,15 +106,15 @@ export class Queue {
   }
 
   async nextRepetition(): Promise<boolean> {
-    let table = await this.loadTable();
+    const table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Console("No more repetitions!", true);
       if (table.removedDeleted) await this.writeQueueTable(table);
       return false;
     }
 
-    let currentRep = table.currentRep();
-    let nextRep = table.nextRep();
+    const currentRep = table.currentRep();
+    const nextRep = table.nextRep();
 
     // Not due; don't schedule or load
     if (currentRep && !currentRep.isDue()) {
@@ -127,15 +127,10 @@ export class Queue {
     table.schedule(currentRep);
 
     let repToLoad = null;
-
-
-    if (currentRep && !nextRep) {
-      // currentRep not necessarily due
-      // after scheduling
-      if (currentRep.isDue())
+    if (currentRep && currentRep.isDue()) {
         repToLoad = currentRep;
-    } else if (currentRep && nextRep) {
-      repToLoad = nextRep.isDue() ? nextRep : currentRep;
+    } else if (nextRep && nextRep.isDue()) {
+        repToLoad = nextRep;
     }
 
     if (repToLoad)
