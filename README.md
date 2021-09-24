@@ -22,33 +22,33 @@ If you would like to support my work, I have a [Patreon page](https://www.patreo
 ### Notes
 
 - This plugin adds a button to the search pane using private Obsidian APIs which could cause the plugin to break when Obsidian updates until I have time to fix it.
-- If you have installed the nldates plugin, you can use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks".
+- The Obsidian API is in early alpha so this plugin could break (temporarily) after an update.
+- I strongly recommend installing the [Natural Language Dates](https://github.com/argenos/nldates-obsidian) plugin alongside this plugin because it allows you to use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks", rather than having to type out a date like "2020-02-02".
+- This plugin is not supported on mobile! (yet)
 
-There are currently 10 hotkey / command palette commands and a couple of buttons and context menu commands.
+### Features
 
-1. Load a queue: The plugin supports multiple queues that you can switch between using a fuzzy search menu. The fuzzy menu searches in the queue folder specified in the settings.
-2. Open queue in current pane: Open the currently loaded queue in the current pane. Toggle to preview mode to see it formatted correctly.
-3. Open queue in new pane: Open the currently loaded queue in a new pane. Toggle to preview mode to see it formatted correctly.
-4. Add note to queue: Adds the current note to the current incremental writing queue.
-5. Add block to queue: Adds the current block to the current incremental writing queue.
-6. Current repetition: Goes to the current repetition for the loaded queue.
-7. Next repetition: Goes to the next repetition for the loaded queue.
-8. Dismiss current repetition: Dismiss the current repetition from the queue. This note or block will not show up again for review.
-9. Add links within the current note to a queue: Add any links to other notes within the current note to a queue.
-10. Add note to queue through a fuzzy finder
+#### Commands
 
-You can also add the output from an inbuilt search to a queue. Do a search and click the button at the top of the search pane to try it out.
+- **Load a queue**: The plugin supports multiple incremental writing queues that you can switch between using a fuzzy search menu. This command uses a fuzzy search component to search in the queue folder specified in the settings for queue files.
+- **Open queue in current pane**: Open the currently loaded queue in the current pane. You can check which queue is currently loaded by looking at the status bar at the bottom of the Obsidian window.
+- **Open queue in new pane**: Same as above, but open the currently loaded queue in a new pane.
+- **Add note to queue**: Adds the active note in Obsidian to the currently loaded incremental writing queue.
+- **Add block to queue**: Adds the current block to the currently loaded incremental writing queue.
+- **Current repetition**: Goes to the current repetition for the currently loaded queue.
+- **Next repetition**: Goes to the next repetition for the currently loaded queue.
+- **Edit current repetition data**: Edit the interval, priority, next repetition date or notes for the current repetition.
+- **Next repetition and manually schedule**: Executes next repetition and opens a modal for you to edit the next repetition date and interval manually.
+- **Dismiss current repetition**: Dismiss the current repetition from the queue. This note or block will not show up again for review.
+- **Add links within the current note to a queue**: Add any links to other notes within the current note to a queue.
+- **Bulk add blocks with references to queue**: Add all of the blocks with "^references" to an incremental writing queue.
+- **Add note to queue through a fuzzy finder**: Opens a fuzzy finder which you can use to add any note in your vault to the current incremental writing queue.
+- **Add search results to a queue**: Do a search and click the "Add to IW Queue" button at the top of the search pane to add all of the results to a queue.
+- **Add folders, files and links to a queue**: You can also right click on folders, files and links to add them to queues through the context menu.
 
-You can also right click on folders, files and links to add them to queues through the context menu.
-
-## Scheduling Options
+#### Scheduling Options
 
 There are currently two scheduling styles to choose from: A-Factor and Simple.
 
-### Simple
-
-When you hit next repetition, the current repetition gets pushed to the end of the queue by setting its priority to 99.
-
-### A-Factor
-
-When you hit next repetition, the interval between repetitions gets multiplied by the A-Factor to work out the next repetition date.
+- **Simple**: When you hit next repetition, the current repetition gets pushed to the end of the queue by setting its priority to 99.
+- **A-Factor**: When you hit next repetition, the interval between repetitions gets multiplied by the A-Factor to work out the next repetition date.
