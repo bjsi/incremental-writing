@@ -166,19 +166,23 @@ export class Queue {
 
   async add(...rows: MarkdownTableRow[]) {
     await this.createTableIfNotExists();
-    let table = await this.loadTable();
+    const table = await this.loadTable();
+    if (!table) {
+	    LogTo.Debug("Failed to create table.", true);
+	    return;
+    }
 
-    for (let row of rows) {
+    for (const row of rows) {
       if (table.hasRowWithLink(row.link)) {
         LogTo.Console(
-          `Skipping ${row.link} because it is already in your queue!`
-        );
+          `Skipping ${row.link} because it is already in your queue!`, true
+	);
         continue;
       }
 
-      if (row.link.contains("|")) {
+      if (row.link.contains("|") || row.notes.contains("|")) {
         LogTo.Console(
-          `Skipping ${row.link} because it contains a pipe character.`
+          `Skipping ${row.link} because it contains a pipe character.`, true
         );
         continue;
       }
