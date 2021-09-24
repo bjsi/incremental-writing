@@ -131,11 +131,9 @@ export default class IW extends Plugin {
 
           LogTo.Debug("New Queue Tags: " + newQueueTags.toString());
           for (const queueTag of newQueueTags) {
-            const addToQueueFiles = queueFiles.filter((f: TFile) =>
-              queueTagMap[f.name.substr(0, f.name.length - 3)].contains(
-                queueTag
-              )
-            );
+            const addToQueueFiles = queueFiles
+              .filter(f => queueTagMap[f.name.substr(0, f.name.length - 3)])
+              .filter(f => queueTagMap[f.name.substr(0, f.name.length - 3)].contains(queueTag));
 
             for (const queueFile of addToQueueFiles) {
               const queue = new Queue(this, queueFile.path);
