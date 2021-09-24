@@ -8,9 +8,13 @@ export class FileUtils extends ObsidianUtilsBase {
     super(app);
   }
 
+  async exists(file: string) {
+    return await this.app.vault.adapter.exists(normalizePath(file));
+  }
+
   async createIfNotExists(file: string, data: string) {
     const normalizedPath = normalizePath(file);
-    if (!(await this.app.vault.adapter.exists(normalizedPath))) {
+    if (!(await this.exists(normalizedPath))) {
       let folderPath = this.getParentOfNormalized(normalizedPath);
       await this.createFolders(folderPath);
       await this.app.vault.create(normalizedPath, data);
