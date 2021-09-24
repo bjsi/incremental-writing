@@ -101,7 +101,7 @@ export class IWSettingsTab extends PluginSettingTab {
         const nldates = (<any>this.plugin.app).plugins.getPlugin(
           "nldates-obsidian"
         );
-        comp.disabled = nldates === null;
+        comp.disabled = nldates == null;
         comp.setValue(String(settings.defaultFirstRepDate)).onChange(
           debounce(
             (value) => {

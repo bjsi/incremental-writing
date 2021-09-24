@@ -243,7 +243,7 @@ export class ReviewBlockModal extends ReviewModal {
     }
 
     const lineNumber = this.getCurrentLineNumber();
-    if (lineNumber === null) {
+    if (lineNumber == null) {
       LogTo.Console("Failed to get the current line number.", true);
       return;
     }

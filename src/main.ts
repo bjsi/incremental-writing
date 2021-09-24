@@ -449,7 +449,7 @@ export default class IW extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file, _: string) => {
-        if (file === null) {
+        if (file == null) {
           return;
         }
 
