@@ -1,5 +1,3 @@
-import { LogTo } from "src/logger";
-
 declare global {
   interface Number {
     isValidAFactor(): boolean;

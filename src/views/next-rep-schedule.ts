@@ -6,6 +6,7 @@ import { MarkdownTableRow, MarkdownTable } from "../markdown";
 import "../helpers/date-utils";
 
 export class NextRepScheduler extends ModalBase {
+  private intervalComponent: TextComponent;
   private priorityComponent: SliderComponent;
   private repDateComponent: TextComponent;
   private curRep: MarkdownTableRow;
@@ -46,6 +47,13 @@ export class NextRepScheduler extends ModalBase {
     contentEl.createEl("br");
 
     //
+    // Interval
+    contentEl.appendText("Interval: ");
+    this.intervalComponent = new TextComponent(contentEl)
+	    .setValue(this.curRep.interval.toString());
+    contentEl.createEl("br");
+
+    //
     // Button
 
     new ButtonComponent(contentEl)
@@ -54,10 +62,6 @@ export class NextRepScheduler extends ModalBase {
         await this.schedule();
         this.close();
       });
-  }
-
-  intervalIsValid(ivl: number) {
-    return !isNaN(ivl) && ivl >= 1;
   }
 
   subscribeToEvents() {
@@ -84,10 +88,13 @@ export class NextRepScheduler extends ModalBase {
       return;
     }
 
+    const interval = Number(this.intervalComponent.getValue());
+    if (!interval.isValidInterval()) {
+	    LogTo.Console("Invalid interval data", true);
+	    return;
+    }
+
     const priority = this.priorityComponent.getValue();
-    const today = new Date();
-    const interval =
-      nextRepDate > today ? nextRepDate.daysDifference(today) : 1;
     this.curRep.nextRepDate = nextRepDate;
     this.curRep.priority = priority;
     this.curRep.interval = interval;
