@@ -40,7 +40,7 @@ abstract class ReviewModal extends ModalBase {
     contentEl.appendText("Queue: ");
     this.inputQueueField = new TextComponent(contentEl)
       .setPlaceholder("Example: queue.md")
-      .setValue(this.plugin.settings.queueFileName);
+      .setValue(this.plugin.files.getTFile(this.plugin.queue.queuePath).name);
     let folderFunc = () =>
       this.plugin.app.vault.getAbstractFileByPath(
         this.plugin.settings.queueFolderPath
