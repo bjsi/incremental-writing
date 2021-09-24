@@ -72,7 +72,7 @@ export class Queue {
   async loadTable(): Promise<MarkdownTable> {
     let text: string = await this.readQueue();
     if (!text) {
-      LogTo.Debug("Failed to load queue table.", true);
+      LogTo.Debug("Failed to load queue table.");
       return;
     }
 
