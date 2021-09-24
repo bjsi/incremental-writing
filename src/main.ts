@@ -233,9 +233,9 @@ export default class IW extends Plugin {
 
   async loadQueue(file: string) {
     if (file && file.length > 0) {
+      this.queue = new Queue(this, file);
       const table = await this.queue.loadTable();
       this.statusBar.updateCurrentRep(table?.currentRep());
-      this.queue = new Queue(this, file);
       this.statusBar.updateCurrentQueue(file);
       LogTo.Console("Loaded Queue: " + file, true);
     } else {
