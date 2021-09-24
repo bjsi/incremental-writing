@@ -24,6 +24,7 @@ If you would like to support my work, I have a [Patreon page](https://www.patreo
 - This plugin adds a button to the search pane using private Obsidian APIs which could cause the plugin to break when Obsidian updates until I have time to fix it.
 - The Obsidian API is in early alpha so this plugin could break (temporarily) after an update.
 - I strongly recommend installing the [Natural Language Dates](https://github.com/argenos/nldates-obsidian) plugin alongside this plugin because it allows you to use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks", rather than having to type out a date like "2020-02-02".
+- This plugin is not supported on mobile! (yet)
 
 ### Features
 
