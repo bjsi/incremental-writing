@@ -1,5 +1,7 @@
 dist/
 
+copy_to_testing.sh
+
 # npm
 node_modules
 package-lock.json
