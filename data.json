@@ -1,11 +1,7 @@
 {
   "queueTagMap": {
-    "IW-Queue": [
-      "iw-queue"
-    ],
-    "Tasks": [
-      "tasks"
-    ]
+    "IW-Queue": ["iw-queue"],
+    "Tasks": ["tasks"]
   },
   "defaultPriorityMin": 17,
   "defaultPriorityMax": 64,

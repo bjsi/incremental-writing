@@ -49,8 +49,9 @@ export class NextRepScheduler extends ModalBase {
     //
     // Interval
     contentEl.appendText("Interval: ");
-    this.intervalComponent = new TextComponent(contentEl)
-	    .setValue(this.curRep.interval.toString());
+    this.intervalComponent = new TextComponent(contentEl).setValue(
+      this.curRep.interval.toString()
+    );
     contentEl.createEl("br");
 
     //
@@ -90,8 +91,8 @@ export class NextRepScheduler extends ModalBase {
 
     const interval = Number(this.intervalComponent.getValue());
     if (!interval.isValidInterval()) {
-	    LogTo.Console("Invalid interval data", true);
-	    return;
+      LogTo.Console("Invalid interval data", true);
+      return;
     }
 
     const priority = this.priorityComponent.getValue();

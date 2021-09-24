@@ -105,17 +105,19 @@ export class IWSettingsTab extends PluginSettingTab {
         comp.setValue(String(settings.defaultFirstRepDate)).onChange(
           debounce(
             (value) => {
-	      if (hasNlDates) {
-		      const dateString = String(value);
-		      const date = nldates.parseDate(dateString);
-		      if (date && date.date) {
-			      LogTo.Debug("Setting default first rep date to " + dateString);
-			      settings.defaultFirstRepDate = dateString;
-			      this.plugin.saveData(settings);
-		      } else {
-			      LogTo.Debug("Invalid natural language date string.");
-		      }
-	      }
+              if (hasNlDates) {
+                const dateString = String(value);
+                const date = nldates.parseDate(dateString);
+                if (date && date.date) {
+                  LogTo.Debug(
+                    "Setting default first rep date to " + dateString
+                  );
+                  settings.defaultFirstRepDate = dateString;
+                  this.plugin.saveData(settings);
+                } else {
+                  LogTo.Debug("Invalid natural language date string.");
+                }
+              }
             },
             500,
             true
@@ -159,12 +161,13 @@ export class IWSettingsTab extends PluginSettingTab {
         textArea.setValue(currentValue).onChange((value) => {
           const str = String(value).trim();
           if (!str) {
-		LogTo.Debug("Setting the queue tag map to empty.");
-		settings.queueTagMap = {};
-		this.plugin.saveData(settings);
-		return;
-	  }
-          else if (!str.split(/\r?\n/).every((line) => line.match(/(.+)=(.+,?)+/))) {
+            LogTo.Debug("Setting the queue tag map to empty.");
+            settings.queueTagMap = {};
+            this.plugin.saveData(settings);
+            return;
+          } else if (
+            !str.split(/\r?\n/).every((line) => line.match(/(.+)=(.+,?)+/))
+          ) {
             LogTo.Debug("Invalid queue tag map. Not saving.");
             return;
           }

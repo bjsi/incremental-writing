@@ -132,8 +132,12 @@ export default class IW extends Plugin {
           LogTo.Debug("New Queue Tags: " + newQueueTags.toString());
           for (const queueTag of newQueueTags) {
             const addToQueueFiles = queueFiles
-              .filter(f => queueTagMap[f.name.substr(0, f.name.length - 3)])
-              .filter(f => queueTagMap[f.name.substr(0, f.name.length - 3)].contains(queueTag));
+              .filter((f) => queueTagMap[f.name.substr(0, f.name.length - 3)])
+              .filter((f) =>
+                queueTagMap[f.name.substr(0, f.name.length - 3)].contains(
+                  queueTag
+                )
+              );
 
             for (const queueFile of addToQueueFiles) {
               const queue = new Queue(this, queueFile.path);
@@ -289,8 +293,8 @@ export default class IW extends Plugin {
         if (await this.queue.nextRepetition()) {
           new NextRepScheduler(this, currentRep, table).open();
         }
-      }
-    })
+      },
+    });
 
     this.addCommand({
       id: "next-iw-repetition",

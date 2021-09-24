@@ -128,15 +128,13 @@ export class Queue {
 
     let repToLoad = null;
     if (currentRep && currentRep.isDue()) {
-        repToLoad = currentRep;
+      repToLoad = currentRep;
     } else if (nextRep && nextRep.isDue()) {
-        repToLoad = nextRep;
+      repToLoad = nextRep;
     }
 
-    if (repToLoad)
-      await this.loadRep(repToLoad);
-    else
-      LogTo.Debug("No more repetitions!", true);
+    if (repToLoad) await this.loadRep(repToLoad);
+    else LogTo.Debug("No more repetitions!", true);
 
     await this.writeQueueTable(table);
 
@@ -163,21 +161,23 @@ export class Queue {
     await this.createTableIfNotExists();
     const table = await this.loadTable();
     if (!table) {
-	    LogTo.Debug("Failed to create table.", true);
-	    return;
+      LogTo.Debug("Failed to create table.", true);
+      return;
     }
 
     for (const row of rows) {
       if (table.hasRowWithLink(row.link)) {
         LogTo.Console(
-          `Skipping ${row.link} because it is already in your queue!`, true
-	);
+          `Skipping ${row.link} because it is already in your queue!`,
+          true
+        );
         continue;
       }
 
       if (row.link.contains("|") || row.notes.contains("|")) {
         LogTo.Console(
-          `Skipping ${row.link} because it contains a pipe character.`, true
+          `Skipping ${row.link} because it contains a pipe character.`,
+          true
         );
         continue;
       }
