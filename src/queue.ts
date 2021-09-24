@@ -108,12 +108,12 @@ export class Queue {
     if (table.removedDeleted) await this.writeQueueTable(table);
   }
 
-  async nextRepetition() {
+  async nextRepetition(): Promise<boolean> {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Console("No more repetitions!", true);
       if (table.removedDeleted) await this.writeQueueTable(table);
-      return;
+      return false;
     }
 
     let currentRep = table.currentRep();
@@ -123,7 +123,7 @@ export class Queue {
     if (currentRep && !currentRep.isDue()) {
       LogTo.Debug("No more repetitions!", true);
       if (table.removedDeleted) await this.writeQueueTable(table);
-      return;
+      return false;
     }
 
     table.removeCurrentRep();
@@ -143,6 +143,7 @@ export class Queue {
     if (this.plugin.settings.askForNextRepDate) {
 	new NextRepScheduler(this.plugin, currentRep, table).open();
     }
+    return true;
   }
 
   private async loadRep(repToLoad: MarkdownTableRow) {

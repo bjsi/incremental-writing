@@ -26,6 +26,7 @@ import { BulkAdderModal } from "./views/bulk-adding";
 import { BlockUtils } from "./helpers/block-utils";
 import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
 import { MarkdownTableRow } from "./markdown";
+import { NextRepScheduler } from "./views/next-rep-schedule";
 
 export default class IW extends Plugin {
   public settings: IWSettings;
@@ -265,6 +266,22 @@ export default class IW extends Plugin {
       callback: () => this.queue.dismissCurrent(),
       hotkeys: [],
     });
+
+    this.addCommand({
+      id: "next-iw-repetition-schedule",
+      name: "Next repetition and manually schedule.",
+      callback: async () => {
+        const table = await this.queue.loadTable();
+        if (!table || !table.hasReps()) {
+          LogTo.Console("No repetitions!", true);
+          return;
+        }
+        const currentRep = table.currentRep();
+        if (await this.queue.nextRepetition()) {
+          new NextRepScheduler(this, currentRep, table).open();
+        }
+      }
+    })
 
     this.addCommand({
       id: "next-iw-repetition",
