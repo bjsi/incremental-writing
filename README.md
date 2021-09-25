@@ -26,6 +26,9 @@ If you would like to support my work, I have a [Patreon page](https://www.patreo
 - I strongly recommend installing the [Natural Language Dates](https://github.com/argenos/nldates-obsidian) plugin alongside this plugin because it allows you to use natural language when you are asked to provide a date eg. "tomorrow" or "in two weeks", rather than having to type out a date like "2020-02-02".
 - This plugin is not supported on mobile! (yet)
 
+### Important! Priorities
+- Confusingly, low priority numbers correspond to high priorities! That means your daily queue of repetitions will be sorted from lowest priority number (most important) to highest priority number (least important). This is because this is the way priorities work in SuperMemo and having used it for a couple years I just got used to thinking about it like that. I didn't realise how confusing this could be until someone mentioned it in an issue. Apologies for any confusion!
+
 ### Features
 
 #### Commands
