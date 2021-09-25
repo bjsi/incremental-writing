@@ -54,8 +54,9 @@ abstract class ReviewModal extends ModalBase {
 
     const firstRepDate = this.plugin.settings.defaultFirstRepDate;
     contentEl.appendText("First Rep Date: ");
-    this.inputFirstRep = new TextComponent(contentEl)
-      .setPlaceholder(firstRepDate);
+    this.inputFirstRep = new TextComponent(contentEl).setPlaceholder(
+      firstRepDate
+    );
     new NaturalDateSuggest(this.plugin, this.inputFirstRep.inputEl);
     contentEl.createEl("br");
 
@@ -134,7 +135,7 @@ export class ReviewNoteModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    const dateStr = this.inputFirstRep.getValue(); 
+    const dateStr = this.inputFirstRep.getValue();
     const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
@@ -172,7 +173,7 @@ export class ReviewFileModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    const dateStr = this.inputFirstRep.getValue(); 
+    const dateStr = this.inputFirstRep.getValue();
     const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
@@ -224,7 +225,7 @@ export class ReviewBlockModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    const dateStr = this.inputFirstRep.getValue(); 
+    const dateStr = this.inputFirstRep.getValue();
     const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");

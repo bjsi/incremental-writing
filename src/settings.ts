@@ -24,9 +24,9 @@ export const DefaultSettings: IWSettings = {
   defaultFirstRepDate: "1970-01-01",
   askForNextRepDate: false,
   dropdownNaturalDates: {
-	  "today": "today",
-	  "tomorrow": "tomorrow",
-	  "in two days": "in two days",
-	  "next week": "next week",
-  }
+    today: "today",
+    tomorrow: "tomorrow",
+    "in two days": "in two days",
+    "next week": "next week",
+  },
 };

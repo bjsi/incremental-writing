@@ -88,52 +88,72 @@ export class IWSettingsTab extends PluginSettingTab {
           this.plugin.saveData(settings);
         });
       });
-        
 
-        const nldates = (<any>this.plugin.app).plugins.getPlugin(
-          "nldates-obsidian"
-        );
+    const nldates = (<any>this.plugin.app).plugins.getPlugin(
+      "nldates-obsidian"
+    );
     const hasNlDates = nldates != null;
 
     //
     // Dropdown Dates
     new Setting(containerEl)
-    	.setName("Dropdown Date List")
-	.setDesc("Sets the default list of dropdown dates that show up in modals so you can quickly set repetition dates.")
-	.addTextArea((comp) => {
-	  comp.setPlaceholder("Example:\ntoday\ntomorrow\nnext week")
-	  const currentValue = Object.keys(this.plugin.settings.dropdownNaturalDates).join("\n");
-	  comp.setValue(currentValue).onChange(
-		debounce(value => {
+      .setName("Dropdown Date List")
+      .setDesc(
+        "Sets the default list of dropdown dates that show up in modals so you can quickly set repetition dates."
+      )
+      .addTextArea((comp) => {
+        comp.setPlaceholder("Example:\ntoday\ntomorrow\nnext week");
+        const currentValue = Object.keys(
+          this.plugin.settings.dropdownNaturalDates
+        ).join("\n");
+        comp.setValue(currentValue).onChange(
+          debounce(
+            (value) => {
               if (hasNlDates) {
-		const inputDates = String(value)
-			    ?.split(/\r?\n/)
-			    ?.map(str => [str, nldates.parseDate(str)]) || [];
+                const inputDates =
+                  String(value)
+                    ?.split(/\r?\n/)
+                    ?.map((str) => [str, nldates.parseDate(str)]) || [];
 
-		if (!inputDates || inputDates.length === 0) {
-			LogTo.Debug("User inputted dates were null or empty");
-			settings.dropdownNaturalDates = {};
-			this.plugin.saveData(settings);
-			return;
-		}
+                if (!inputDates || inputDates.length === 0) {
+                  LogTo.Debug("User inputted dates were null or empty");
+                  settings.dropdownNaturalDates = {};
+                  this.plugin.saveData(settings);
+                  return;
+                }
 
-		const validDates = inputDates
-			    .filter(([_, date]) => date != null && date.date)
-			    .map(([s, _]) => s);
+                const validDates = inputDates
+                  .filter(([_, date]) => date != null && date.date)
+                  .map(([s, _]) => s);
 
-		if (inputDates.length !== validDates.length) {
-			LogTo.Debug(`Ignoring ${inputDates.length - validDates.length} invalid natural language date strings.`);
-		}
+                if (inputDates.length !== validDates.length) {
+                  LogTo.Debug(
+                    `Ignoring ${
+                      inputDates.length - validDates.length
+                    } invalid natural language date strings.`
+                  );
+                }
 
-		const dateOptionsRecord: Record<string, string> = validDates
-			.reduce((acc: Record<string, string>, x: string) => acc[x]=x, {});
-                LogTo.Debug("Setting dropdown date options to " + JSON.stringify(dateOptionsRecord));
+                const dateOptionsRecord: Record<
+                  string,
+                  string
+                > = validDates.reduce(
+                  (acc: Record<string, string>, x: string) => (acc[x] = x),
+                  {}
+                );
+                LogTo.Debug(
+                  "Setting dropdown date options to " +
+                    JSON.stringify(dateOptionsRecord)
+                );
                 settings.dropdownNaturalDates = dateOptionsRecord;
                 this.plugin.saveData(settings);
               }
-	   }, 500, true)
-	  )
-	})
+            },
+            500,
+            true
+          )
+        );
+      });
 
     //
     // First Rep Date
@@ -144,30 +164,31 @@ export class IWSettingsTab extends PluginSettingTab {
         "Sets the default first repetition date for new repetitions. Example: today, tomorrow, next week. **Requires that you have installed the Natural Language Dates plugin.**"
       )
       .addText((comp) => {
-	new NaturalDateSuggest(this.plugin, comp.inputEl);
-        comp.setValue(String(settings.defaultFirstRepDate))
-            .setPlaceholder("1970-01-01")
-   	    .onChange(
-          debounce(
-            (value) => {
-              if (hasNlDates) {
-                const dateString = String(value);
-                const date = nldates.parseDate(dateString);
-                if (date && date.date) {
-                  LogTo.Debug(
-                    "Setting default first rep date to " + dateString
-                  );
-                  settings.defaultFirstRepDate = dateString;
-                  this.plugin.saveData(settings);
-                } else {
-                  LogTo.Debug("Invalid natural language date string.");
+        new NaturalDateSuggest(this.plugin, comp.inputEl);
+        comp
+          .setValue(String(settings.defaultFirstRepDate))
+          .setPlaceholder("1970-01-01")
+          .onChange(
+            debounce(
+              (value) => {
+                if (hasNlDates) {
+                  const dateString = String(value);
+                  const date = nldates.parseDate(dateString);
+                  if (date && date.date) {
+                    LogTo.Debug(
+                      "Setting default first rep date to " + dateString
+                    );
+                    settings.defaultFirstRepDate = dateString;
+                    this.plugin.saveData(settings);
+                  } else {
+                    LogTo.Debug("Invalid natural language date string.");
+                  }
                 }
-              }
-            },
-            500,
-            true
-          )
-        );
+              },
+              500,
+              true
+            )
+          );
       });
 
     //

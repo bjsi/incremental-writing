@@ -9,5 +9,10 @@
   "autoAddNewNotes": false,
   "defaultFirstRepDate": "today",
   "askForNextRepDate": false,
-  "dropdownNaturalDates": {"today": "today", "tomorrow": "tomorrow", "in two days": "in two days", "next week": "next week"}
+  "dropdownNaturalDates": {
+    "today": "today",
+    "tomorrow": "tomorrow",
+    "in two days": "in two days",
+    "next week": "next week"
+  }
 }
