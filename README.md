@@ -46,6 +46,14 @@ If you would like to support my work, I have a [Patreon page](https://www.patreo
 - **Add search results to a queue**: Do a search and click the "Add to IW Queue" button at the top of the search pane to add all of the results to a queue.
 - **Add folders, files and links to a queue**: You can also right click on folders, files and links to add them to queues through the context menu.
 
+#### Automatically Add Notes to Queues
+
+There are some options for automatically adding notes to queues.
+
+- **Auto add notes using tags**: In the settings page you can define a list of queue names and associated tags. When you modify a note, the plugin will check to see if a queue tag was added. If so, the note will automatically get added to the queue. This mapping only applies to newly created notes, ie. when you install the plugin it won't automatically add all notes with a given tag to a queue. So the recommended workflow is to begin by searching for all notes with a given tag and adding those to a queue using the "add search results to queue" function (see above). Then you can set up the queue to tag mapping in the settings to make sure that future notes with a given tag get added to the queue.
+
+- **Auto add new notes option**: When toggled on in the settings, new will automatically get added to the default queue. I recommend using the tag method above rather than this because using tags gives you more control over which notes get added and which queue(s) they get added to.
+
 #### Scheduling Options
 
 There are currently two scheduling styles to choose from: A-Factor and Simple.
