@@ -9,6 +9,7 @@ export interface IWSettings {
   autoAddNewNotes: boolean;
   defaultFirstRepDate: string;
   askForNextRepDate: boolean;
+  dropdownNaturalDates: Record<string, string>;
 }
 
 export const DefaultSettings: IWSettings = {
@@ -22,4 +23,10 @@ export const DefaultSettings: IWSettings = {
   autoAddNewNotes: false,
   defaultFirstRepDate: "1970-01-01",
   askForNextRepDate: false,
+  dropdownNaturalDates: {
+	  "today": "today",
+	  "tomorrow": "tomorrow",
+	  "in two days": "in two days",
+	  "next week": "next week",
+  }
 };

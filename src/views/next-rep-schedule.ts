@@ -4,6 +4,7 @@ import { SliderComponent, TextComponent, ButtonComponent } from "obsidian";
 import { ModalBase } from "./modal-base";
 import { MarkdownTableRow, MarkdownTable } from "../markdown";
 import "../helpers/date-utils";
+import { NaturalDateSuggest } from "./date-suggest";
 
 export class NextRepScheduler extends ModalBase {
   private intervalComponent: TextComponent;
@@ -28,9 +29,9 @@ export class NextRepScheduler extends ModalBase {
     // Date
 
     contentEl.appendText("Next repetition date: ");
-    this.repDateComponent = new TextComponent(contentEl).setValue(
-      this.curRep.nextRepDate.formatYYMMDD()
-    );
+    this.repDateComponent = new TextComponent(contentEl)
+    	.setPlaceholder(this.curRep.nextRepDate.formatYYMMDD())
+    new NaturalDateSuggest(this.plugin, this.repDateComponent.inputEl)
     contentEl.createEl("br");
 
     this.repDateComponent.inputEl.focus();
@@ -83,8 +84,9 @@ export class NextRepScheduler extends ModalBase {
   }
 
   async schedule() {
-    const nextRepDate = this.parseDate(this.repDateComponent.getValue());
-    if (!nextRepDate) {
+    const dateStr = this.repDateComponent.getValue(); 
+    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
+    if (!date) {
       LogTo.Console("Failed to parse next repetition date!", true);
       return;
     }
@@ -96,7 +98,7 @@ export class NextRepScheduler extends ModalBase {
     }
 
     const priority = this.priorityComponent.getValue();
-    this.curRep.nextRepDate = nextRepDate;
+    this.curRep.nextRepDate = date;
     this.curRep.priority = priority;
     this.curRep.interval = interval;
     await this.plugin.queue.writeQueueTable(this.table);

@@ -1,10 +1,11 @@
-import { SliderComponent, TextComponent, ButtonComponent } from "obsidian";
+import { SliderComponent, TextComponent, ButtonComponent, DropdownComponent } from "obsidian";
 import IW from "../main";
 import { ModalBase } from "./modal-base";
 import { LogTo } from "../logger";
 import { MarkdownTable, MarkdownTableRow } from "../markdown";
 import "../helpers/date-utils";
 import "../helpers/number-utils";
+import { NaturalDateSuggest } from "./date-suggest";
 
 export class EditDataModal extends ModalBase {
   private inputSlider: SliderComponent;
@@ -31,8 +32,8 @@ export class EditDataModal extends ModalBase {
 
     contentEl.appendText("Next Rep Date: ");
     this.inputNextRep = new TextComponent(contentEl)
-      .setPlaceholder("Date")
-      .setValue(this.currentRep.nextRepDate.formatYYMMDD());
+      .setPlaceholder(this.currentRep.nextRepDate.formatYYMMDD());
+    new NaturalDateSuggest(this.plugin, this.inputNextRep.inputEl);
     contentEl.createEl("br");
 
     this.inputNextRep.inputEl.focus();
@@ -84,7 +85,8 @@ export class EditDataModal extends ModalBase {
   }
 
   async updateRepData() {
-    const date = this.parseDate(this.inputNextRep.getValue());
+    const dateStr = this.inputNextRep.getValue(); 
+    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse next repetition date!", true);
       return;

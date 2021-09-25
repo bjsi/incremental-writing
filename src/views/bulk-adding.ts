@@ -15,6 +15,7 @@ import { LogTo } from "../logger";
 import "../helpers/number-utils.ts";
 import "../helpers/date-utils.ts";
 import "../helpers/str-utils.ts";
+import { NaturalDateSuggest } from "./date-suggest";
 
 export class BulkAdderModal extends ModalBase {
   private queuePath: string;
@@ -142,11 +143,15 @@ export class BulkAdderModal extends ModalBase {
     // Rep Dates
 
     this.contentEl.appendText("Earliest Rep Date: ");
-    this.inputFirstRepMin = new TextComponent(contentEl).setValue("1970-01-01");
+    this.inputFirstRepMin = new TextComponent(contentEl)
+    	.setPlaceholder("1970-01-01")
+    new NaturalDateSuggest(this.plugin, this.inputFirstRepMin.inputEl)
     this.contentEl.createEl("br");
 
     this.contentEl.appendText("Latest Rep Date: ");
-    this.inputFirstRepMax = new TextComponent(contentEl).setValue("1970-01-01");
+    this.inputFirstRepMax = new TextComponent(contentEl)
+    	.setPlaceholder("1970-01-01")
+    new NaturalDateSuggest(this.plugin, this.inputFirstRepMax.inputEl)
     this.contentEl.createEl("br");
     //
     // Events
@@ -177,8 +182,10 @@ export class BulkAdderModal extends ModalBase {
 
     const priMin = Number(this.minPriorityComponent.getValue());
     const priMax = Number(this.maxPriorityComponent.getValue());
-    const dateMin = this.parseDate(this.inputFirstRepMin.getValue());
-    const dateMax = this.parseDate(this.inputFirstRepMax.getValue());
+    const dateMinStr = this.inputFirstRepMin.getValue();
+    const dateMaxStr = this.inputFirstRepMax.getValue();
+    const dateMin = this.parseDate(dateMinStr === "" ? "1970-01-01" : dateMinStr);
+    const dateMax = this.parseDate(dateMaxStr === "" ? "1970-01-01" : dateMaxStr);
 
     if (
       !(

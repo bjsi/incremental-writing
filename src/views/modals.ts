@@ -15,6 +15,7 @@ import { PriorityUtils } from "../helpers/priority-utils";
 import { MarkdownTableRow } from "../markdown";
 import "../helpers/date-utils";
 import "../helpers/number-utils";
+import { NaturalDateSuggest } from "./date-suggest";
 
 abstract class ReviewModal extends ModalBase {
   protected title: string;
@@ -54,8 +55,8 @@ abstract class ReviewModal extends ModalBase {
     const firstRepDate = this.plugin.settings.defaultFirstRepDate;
     contentEl.appendText("First Rep Date: ");
     this.inputFirstRep = new TextComponent(contentEl)
-      .setPlaceholder("Date")
-      .setValue(firstRepDate);
+      .setPlaceholder(firstRepDate);
+    new NaturalDateSuggest(this.plugin, this.inputFirstRep.inputEl);
     contentEl.createEl("br");
 
     this.inputFirstRep.inputEl.focus();
@@ -111,14 +112,6 @@ abstract class ReviewModal extends ModalBase {
     });
   }
 
-  getPriority(): number {
-    return this.inputSlider.getValue();
-  }
-
-  getNotes() {
-    return this.inputNoteField.getValue();
-  }
-
   getQueuePath() {
     let queue = this.inputQueueField.getValue();
     if (!queue.endsWith(".md")) queue += ".md";
@@ -141,23 +134,24 @@ export class ReviewNoteModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    let date = this.parseDate(this.inputFirstRep.getValue());
+    const dateStr = this.inputFirstRep.getValue(); 
+    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
     }
 
-    let queue = new Queue(this.plugin, this.getQueuePath());
-    let file = this.plugin.files.getActiveNoteFile();
+    const queue = new Queue(this.plugin, this.getQueuePath());
+    const file = this.plugin.files.getActiveNoteFile();
     if (!file) {
       LogTo.Console("Failed to add to outstanding.", true);
       return;
     }
-    let link = this.plugin.files.toLinkText(file);
-    let row = new MarkdownTableRow(
+    const link = this.plugin.files.toLinkText(file);
+    const row = new MarkdownTableRow(
       link,
-      this.getPriority(),
-      this.getNotes(),
+      this.inputSlider.getValue(),
+      this.inputNoteField.getValue(),
       1,
       date
     );
@@ -178,23 +172,24 @@ export class ReviewFileModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    let date = this.parseDate(this.inputFirstRep.getValue());
+    const dateStr = this.inputFirstRep.getValue(); 
+    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
     }
 
-    let queue = new Queue(this.plugin, this.getQueuePath());
-    let file = this.plugin.files.getTFile(this.filePath);
+    const queue = new Queue(this.plugin, this.getQueuePath());
+    const file = this.plugin.files.getTFile(this.filePath);
     if (!file) {
       LogTo.Console("Failed to add to outstanding because file was null", true);
       return;
     }
-    let link = this.plugin.files.toLinkText(file);
-    let row = new MarkdownTableRow(
+    const link = this.plugin.files.toLinkText(file);
+    const row = new MarkdownTableRow(
       link,
-      this.getPriority(),
-      this.getNotes(),
+      this.inputSlider.getValue(),
+      this.inputNoteField.getValue(),
       1,
       date
     );
@@ -229,7 +224,8 @@ export class ReviewBlockModal extends ReviewModal {
   }
 
   async addToOutstanding() {
-    const date = this.parseDate(this.inputFirstRep.getValue());
+    const dateStr = this.inputFirstRep.getValue(); 
+    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
@@ -262,8 +258,8 @@ export class ReviewBlockModal extends ReviewModal {
     await queue.add(
       new MarkdownTableRow(
         blockLink,
-        this.getPriority(),
-        this.getNotes(),
+        this.inputSlider.getValue(),
+        this.inputNoteField.getValue(),
         1,
         date
       )
