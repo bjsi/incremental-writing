@@ -29,9 +29,8 @@ export class NextRepScheduler extends ModalBase {
     // Date
 
     contentEl.appendText("Next repetition date: ");
-    this.repDateComponent = new TextComponent(contentEl).setPlaceholder(
-      this.curRep.nextRepDate.formatYYMMDD()
-    );
+    this.repDateComponent = new TextComponent(contentEl)
+    	.setPlaceholder(this.curRep.nextRepDate.formatYYMMDD());
     new NaturalDateSuggest(this.plugin, this.repDateComponent.inputEl);
     contentEl.createEl("br");
 
@@ -86,7 +85,7 @@ export class NextRepScheduler extends ModalBase {
 
   async schedule() {
     const dateStr = this.repDateComponent.getValue();
-    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
+    const date = this.parseDate(dateStr === "" ? this.curRep.nextRepDate.formatYYMMDD() : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse next repetition date!", true);
       return;

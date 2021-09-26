@@ -92,7 +92,7 @@ export class EditDataModal extends ModalBase {
 
   async updateRepData() {
     const dateStr = this.inputNextRep.getValue();
-    const date = this.parseDate(dateStr === "" ? "1970-01-01" : dateStr);
+    const date = this.parseDate(dateStr === "" ? this.currentRep.nextRepDate.formatYYMMDD() : dateStr);
     if (!date) {
       LogTo.Console("Failed to parse next repetition date!", true);
       return;
