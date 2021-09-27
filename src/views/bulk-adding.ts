@@ -186,10 +186,10 @@ export class BulkAdderModal extends ModalBase {
     const priMax = Number(this.maxPriorityComponent.getValue());
     const dateMinStr = this.inputFirstRepMin.getValue();
     const dateMaxStr = this.inputFirstRepMax.getValue();
-    const dateMin = this.parseDate(
+    const dateMin = this.plugin.dates.parseDate(
       dateMinStr === "" ? "1970-01-01" : dateMinStr
     );
-    const dateMax = this.parseDate(
+    const dateMax = this.plugin.dates.parseDate(
       dateMaxStr === "" ? "1970-01-01" : dateMaxStr
     );
 

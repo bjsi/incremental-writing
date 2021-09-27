@@ -28,6 +28,7 @@ import { FuzzyNoteAdder } from "./views/fuzzy-note-adder";
 import { MarkdownTableRow } from "./markdown";
 import { NextRepScheduler } from "./views/next-rep-schedule";
 import { EditDataModal } from "./views/edit-data";
+import { DateParser } from "./helpers/parse-date";
 
 export default class IW extends Plugin {
   public settings: IWSettings;
@@ -37,9 +38,10 @@ export default class IW extends Plugin {
   //
   // Utils
 
-  public links: LinkEx = new LinkEx(this.app);
-  public files: FileUtils = new FileUtils(this.app);
-  public blocks: BlockUtils = new BlockUtils(this.app);
+  public readonly links: LinkEx = new LinkEx(this.app);
+  public readonly files: FileUtils = new FileUtils(this.app);
+  public readonly blocks: BlockUtils = new BlockUtils(this.app);
+  public readonly dates: DateParser = new DateParser(this.app);
 
   private autoAddNewNotesOnCreateEvent: EventRef;
   private checkTagsOnModifiedEvent: EventRef;
@@ -146,7 +148,8 @@ export default class IW extends Plugin {
               const min = this.settings.defaultPriorityMin;
               const max = this.settings.defaultPriorityMax;
               const priority = this.randomWithinInterval(min, max);
-              const row = new MarkdownTableRow(link, priority, "");
+              const date = this.dates.parseDate(this.settings.defaultFirstRepDate);
+              const row = new MarkdownTableRow(link, priority, "", 1, date);
               await queue.add(row);
             }
           }

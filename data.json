@@ -1,5 +1,9 @@
 {
-  "queueTagMap": {},
+  "queueTagMap": {
+    "IW-Queue": [
+      "iw"
+    ]
+  },
   "defaultPriorityMin": 10,
   "defaultPriorityMax": 50,
   "queueFolderPath": "IW-Queues",
@@ -7,7 +11,7 @@
   "defaultQueueType": "afactor",
   "skipAddNoteWindow": false,
   "autoAddNewNotes": false,
-  "defaultFirstRepDate": "today",
+  "defaultFirstRepDate": "tomorrow",
   "askForNextRepDate": false,
   "dropdownNaturalDates": {
     "today": "today",
