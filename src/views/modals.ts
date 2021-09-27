@@ -136,7 +136,9 @@ export class ReviewNoteModal extends ReviewModal {
 
   async addToOutstanding() {
     const dateStr = this.inputFirstRep.getValue();
-    const date = this.plugin.dates.parseDate(dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr);
+    const date = this.plugin.dates.parseDate(
+      dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr
+    );
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
@@ -174,7 +176,9 @@ export class ReviewFileModal extends ReviewModal {
 
   async addToOutstanding() {
     const dateStr = this.inputFirstRep.getValue();
-    const date = this.plugin.dates.parseDate(dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr);
+    const date = this.plugin.dates.parseDate(
+      dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr
+    );
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;
@@ -226,7 +230,9 @@ export class ReviewBlockModal extends ReviewModal {
 
   async addToOutstanding() {
     const dateStr = this.inputFirstRep.getValue();
-    const date = this.plugin.dates.parseDate(dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr);
+    const date = this.plugin.dates.parseDate(
+      dateStr === "" ? this.plugin.settings.defaultFirstRepDate : dateStr
+    );
     if (!date) {
       LogTo.Console("Failed to parse initial repetition date!");
       return;

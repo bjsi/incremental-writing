@@ -1,9 +1,7 @@
 import { App } from "obsidian";
 import { ObsidianUtilsBase } from "./obsidian-utils-base";
 
-
 export class DateParser extends ObsidianUtilsBase {
-
   constructor(app: App) {
     super(app);
   }

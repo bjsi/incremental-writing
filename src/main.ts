@@ -148,7 +148,9 @@ export default class IW extends Plugin {
               const min = this.settings.defaultPriorityMin;
               const max = this.settings.defaultPriorityMax;
               const priority = this.randomWithinInterval(min, max);
-              const date = this.dates.parseDate(this.settings.defaultFirstRepDate);
+              const date = this.dates.parseDate(
+                this.settings.defaultFirstRepDate
+              );
               const row = new MarkdownTableRow(link, priority, "", 1, date);
               await queue.add(row);
             }
