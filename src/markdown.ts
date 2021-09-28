@@ -1,16 +1,17 @@
 import "./helpers/date-utils";
+import {EOL} from "os";
 import "./helpers/number-utils";
 import { LinkEx } from "./helpers/link-utils";
 import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler";
 import IW from "./main";
 import { GrayMatterFile } from "gray-matter";
 import { LogTo } from "./logger";
+import {markdownTable} from 'markdown-table'
 
 export class MarkdownTable {
   plugin: IW;
   scheduler: Scheduler;
-  private header = `| Link | Priority | Notes | Interval | Next Rep |
-|------|----------|-------|---------|----------|`;
+  private header = ["Link", "Priority", "Notes", "Interval", "Next Rep"];
   rows: MarkdownTableRow[] = [];
   removedDeleted: boolean = false;
 
@@ -20,7 +21,7 @@ export class MarkdownTable {
     this.scheduler = this.createScheduler(frontMatter);
     if (text) {
       text = text.trim();
-      let split = text.split("\n");
+      let split = text.split(/\r?\n/)
       let idx = this.findYamlEnd(split);
       if (idx !== -1)
         // line after yaml + header
@@ -169,12 +170,21 @@ export class MarkdownTable {
   }
 
   toString() {
-    let table = this.scheduler.toString() + "\n";
-    table += this.header;
-    if (this.rows) {
-      table += "\n" + this.rows.join("\n");
+    const yaml = this.scheduler.toString();
+    const rows = this.toArray();
+    if (rows && rows.length > 0) {
+	const align = {align: ['l', 'r', 'l', 'r', 'r']}
+	return [yaml, markdownTable([this.header, ...rows], align)]
+	   .join(EOL)
+	   .trim();
     }
-    return table.trim();
+    else {
+	    return yaml.trim();
+    }
+  }
+
+  toArray() {
+	  return this.rows.map(x => x.toArray());
   }
 }
 
@@ -196,19 +206,22 @@ export class MarkdownTableRow {
     this.priority = priority.isValidPriority() ? priority : 30;
     this.notes = notes.replace(/(\r\n|\n|\r|\|)/gm, "");
     this.interval = interval.isValidInterval() ? interval : 1;
-    this.nextRepDate = nextRepDate.isValid
+    this.nextRepDate = nextRepDate.isValid()
       ? nextRepDate
       : new Date("1970-01-01");
   }
 
   isDue(): boolean {
-    if (new Date(Date.now()) >= this.nextRepDate) return true;
-    return false;
+    return (new Date(Date.now()) >= this.nextRepDate);
   }
 
-  toString() {
-    let date = this.nextRepDate.formatYYMMDD();
-    let link = LinkEx.addBrackets(this.link);
-    return `| ${link} | ${this.priority} | ${this.notes} | ${this.interval} | ${date} |`;
+  toArray() {
+    return [
+	    LinkEx.addBrackets(this.link),
+	    this.priority.toString(),
+	    this.notes,
+	    this.interval.toString(),
+	    this.nextRepDate.formatYYMMDD(),
+    ]
   }
 }
