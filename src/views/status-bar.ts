@@ -1,5 +1,5 @@
 import { MarkdownTableRow } from "../markdown";
-import "../helpers/str-utils"
+import "../helpers/str-utils";
 import { normalizePath, parseLinktext } from "obsidian";
 import IW from "../main";
 
@@ -37,13 +37,10 @@ export class StatusBar {
   }
 
   updateCurrentQueue(queuePath: string) {
-      const name = normalizePath(queuePath)
-      	?.split("/")
-	?.last()
-	?.rtrim(".md") || "";
-      this.queueText.innerText = name && name.length > 0
-	      ? "Queue: " + name
-	      : "Queue: None";
+    const name =
+      normalizePath(queuePath)?.split("/")?.last()?.rtrim(".md") || "";
+    this.queueText.innerText =
+      name && name.length > 0 ? "Queue: " + name : "Queue: None";
   }
 
   updateCurrentPriority(n: number) {

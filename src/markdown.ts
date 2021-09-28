@@ -1,12 +1,12 @@
 import "./helpers/date-utils";
-import {EOL} from "os";
+import { EOL } from "os";
 import "./helpers/number-utils";
 import { LinkEx } from "./helpers/link-utils";
 import { Scheduler, SimpleScheduler, AFactorScheduler } from "./scheduler";
 import IW from "./main";
 import { GrayMatterFile } from "gray-matter";
 import { LogTo } from "./logger";
-import {markdownTable} from 'markdown-table'
+import { markdownTable } from "markdown-table";
 
 export class MarkdownTable {
   plugin: IW;
@@ -21,7 +21,7 @@ export class MarkdownTable {
     this.scheduler = this.createScheduler(frontMatter);
     if (text) {
       text = text.trim();
-      let split = text.split(/\r?\n/)
+      let split = text.split(/\r?\n/);
       let idx = this.findYamlEnd(split);
       if (idx !== -1)
         // line after yaml + header
@@ -173,18 +173,17 @@ export class MarkdownTable {
     const yaml = this.scheduler.toString();
     const rows = this.toArray();
     if (rows && rows.length > 0) {
-	const align = {align: ['l', 'r', 'l', 'r', 'r']}
-	return [yaml, markdownTable([this.header, ...rows], align)]
-	   .join(EOL)
-	   .trim();
-    }
-    else {
-	    return yaml.trim();
+      const align = { align: ["l", "r", "l", "r", "r"] };
+      return [yaml, markdownTable([this.header, ...rows], align)]
+        .join(EOL)
+        .trim();
+    } else {
+      return yaml.trim();
     }
   }
 
   toArray() {
-	  return this.rows.map(x => x.toArray());
+    return this.rows.map((x) => x.toArray());
   }
 }
 
@@ -212,16 +211,16 @@ export class MarkdownTableRow {
   }
 
   isDue(): boolean {
-    return (new Date(Date.now()) >= this.nextRepDate);
+    return new Date(Date.now()) >= this.nextRepDate;
   }
 
   toArray() {
     return [
-	    LinkEx.addBrackets(this.link),
-	    this.priority.toString(),
-	    this.notes,
-	    this.interval.toString(),
-	    this.nextRepDate.formatYYMMDD(),
-    ]
+      LinkEx.addBrackets(this.link),
+      this.priority.toString(),
+      this.notes,
+      this.interval.toString(),
+      this.nextRepDate.formatYYMMDD(),
+    ];
   }
 }
