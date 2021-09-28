@@ -1,5 +1,6 @@
 import { MarkdownTableRow } from "../markdown";
-import { parseLinktext } from "obsidian";
+import "../helpers/str-utils"
+import { normalizePath, parseLinktext } from "obsidian";
 import IW from "../main";
 
 export class StatusBar {
@@ -35,12 +36,14 @@ export class StatusBar {
     this.statusBarAdded = true;
   }
 
-  updateCurrentQueue(queue: string) {
-    if (queue) {
-      let name = queue.split("/")[1];
-      if (name.endsWith(".md")) name = name.substr(0, name.length - 3);
-      this.queueText.innerText = "Queue: " + name;
-    }
+  updateCurrentQueue(queuePath: string) {
+      const name = normalizePath(queuePath)
+      	?.split("/")
+	?.last()
+	?.rtrim(".md") || "";
+      this.queueText.innerText = name && name.length > 0
+	      ? "Queue: " + name
+	      : "Queue: None";
   }
 
   updateCurrentPriority(n: number) {
