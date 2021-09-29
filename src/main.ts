@@ -29,6 +29,7 @@ import { MarkdownTableRow } from "./markdown";
 import { NextRepScheduler } from "./views/next-rep-schedule";
 import { EditDataModal } from "./views/edit-data";
 import { DateParser } from "./helpers/parse-date";
+import { CreateQueueModal } from "./views/create-queue";
 
 export default class IW extends Plugin {
   public settings: IWSettings;
@@ -251,6 +252,16 @@ export default class IW extends Plugin {
   }
 
   registerCommands() {
+    //
+    // Queue Creation
+    
+    this.addCommand({
+      id: "create-new-iw-queue",
+      name: "Create and load a new queue.",
+      callback: () => new CreateQueueModal(this).open(),
+      hotkeys: [],
+    });
+
     //
     // Queue Browsing
 
