@@ -144,14 +144,14 @@ export class BulkAdderModal extends ModalBase {
 
     this.contentEl.appendText("Earliest Rep Date: ");
     this.inputFirstRepMin = new TextComponent(contentEl).setPlaceholder(
-      "1970-01-01"
+      this.plugin.settings.defaultFirstRepDate
     );
     new NaturalDateSuggest(this.plugin, this.inputFirstRepMin.inputEl);
     this.contentEl.createEl("br");
 
     this.contentEl.appendText("Latest Rep Date: ");
     this.inputFirstRepMax = new TextComponent(contentEl).setPlaceholder(
-      "1970-01-01"
+      this.plugin.settings.defaultFirstRepDate
     );
     new NaturalDateSuggest(this.plugin, this.inputFirstRepMax.inputEl);
     this.contentEl.createEl("br");
@@ -187,10 +187,10 @@ export class BulkAdderModal extends ModalBase {
     const dateMinStr = this.inputFirstRepMin.getValue();
     const dateMaxStr = this.inputFirstRepMax.getValue();
     const dateMin = this.plugin.dates.parseDate(
-      dateMinStr === "" ? "1970-01-01" : dateMinStr
+      dateMinStr === "" ? this.plugin.settings.defaultFirstRepDate : dateMinStr
     );
     const dateMax = this.plugin.dates.parseDate(
-      dateMaxStr === "" ? "1970-01-01" : dateMaxStr
+      dateMaxStr === "" ? this.plugin.settings.defaultFirstRepDate : dateMaxStr
     );
 
     if (
