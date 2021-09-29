@@ -32,7 +32,7 @@ export class CreateQueueModal extends ModalBase {
     // Queue Name
     contentEl.appendText("Queue Name: ");
     this.queueNameText = new TextComponent(contentEl)
-      .setPlaceholder("Example: New-Queue-Name");
+      .setPlaceholder("Examples: queue, folder/queue");
     contentEl.createEl("br");
     this.queueNameText.inputEl.focus();
     this.queueNameText.inputEl.select();
@@ -119,7 +119,7 @@ subscribeToEvents() {
 	    }
 
 	    const schedulerData = this.createScheduler().toString();
-	    LogTo.Debug("Creating queue: " + queueName);
+	    LogTo.Debug("Creating queue: " + queueName, true);
 	    await this.plugin.files.createIfNotExists(queueFile, schedulerData);
 	    await this.plugin.loadQueue(queueFile);
     }

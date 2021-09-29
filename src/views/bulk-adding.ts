@@ -179,6 +179,7 @@ export class BulkAdderModal extends ModalBase {
   async add() {
     if (this.toAdd.length === 0) {
       LogTo.Debug("Nothing to add (excluding duplicates).", true);
+      this.close();
       return;
     }
 
@@ -202,14 +203,12 @@ export class BulkAdderModal extends ModalBase {
     ) {
       LogTo.Debug("Min: " + priMin.toString());
       LogTo.Debug("Max: " + priMax.toString());
-      LogTo.Debug("Failed to add: priority data is invalid.", true);
-      this.close();
+      LogTo.Debug("Priority data is invalid.", true);
       return;
     }
 
     if (!(dateMin.isValid() && dateMax.isValid() && dateMin <= dateMax)) {
-      LogTo.Debug("Failed to add: date data is invalid!", true);
-      this.close();
+      LogTo.Debug("Date data is invalid!", true);
       return;
     }
 
