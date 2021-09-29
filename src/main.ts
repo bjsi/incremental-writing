@@ -239,12 +239,16 @@ export default class IW extends Plugin {
     }
   }
 
+  async updateStatusBar() {
+      const table = await this.queue.loadTable();
+      this.statusBar.updateCurrentRep(table?.currentRep());
+      this.statusBar.updateCurrentQueue(this.queue.queuePath);
+  }
+
   async loadQueue(file: string) {
     if (file && file.length > 0) {
       this.queue = new Queue(this, file);
-      const table = await this.queue.loadTable();
-      this.statusBar.updateCurrentRep(table?.currentRep());
-      this.statusBar.updateCurrentQueue(file);
+      await this.updateStatusBar();
       LogTo.Console("Loaded Queue: " + file, true);
     } else {
       LogTo.Console("Failed to load queue.", true);
@@ -285,14 +289,14 @@ export default class IW extends Plugin {
     this.addCommand({
       id: "current-iw-repetition",
       name: "Current repetition.",
-      callback: () => this.queue.goToCurrentRep(),
+      callback: async () => await this.queue.goToCurrentRep(),
       hotkeys: [],
     });
 
     this.addCommand({
       id: "dismiss-current-repetition",
       name: "Dismiss current repetition.",
-      callback: () => this.queue.dismissCurrent(),
+      callback: async () => { await this.queue.dismissCurrent() },
       hotkeys: [],
     });
 
@@ -315,7 +319,7 @@ export default class IW extends Plugin {
     this.addCommand({
       id: "next-iw-repetition",
       name: "Next repetition.",
-      callback: () => this.queue.nextRepetition(),
+      callback: async () => await this.queue.nextRepetition(),
       hotkeys: [],
     });
 
@@ -336,6 +340,7 @@ export default class IW extends Plugin {
         }
 
         new EditDataModal(this, curRep, table).open();
+        await this.updateStatusBar();
       },
       hotkeys: [],
     });

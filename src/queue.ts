@@ -24,49 +24,25 @@ export class Queue {
     await this.plugin.files.goTo(this.queuePath, newLeaf);
   }
 
-  async changePriority(n: number) {
-    const table = await this.loadTable();
-    if (!table || !table.hasReps()) {
-      LogTo.Debug("No repetitions!", true);
-      return;
-    }
-
-    const curRep = table.currentRep();
-    if (!curRep) {
-      LogTo.Debug("No current repetition!", true);
-      return;
-    }
-
-    let newPriority = curRep.priority + n;
-    if (newPriority < 0) {
-      newPriority = 0;
-    } else if (newPriority > 100) {
-      newPriority = 100;
-    }
-
-    curRep.priority = newPriority;
-    await this.writeQueueTable(table);
-    this.plugin.statusBar.updateCurrentPriority(newPriority);
-  }
-
   async dismissCurrent() {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Debug("No repetitions!", true);
-      if (table.removedDeleted) await this.writeQueueTable(table);
+      if (table.removeDeleted) await this.writeQueueTable(table);
       return;
     }
 
     let curRep = table.currentRep();
     if (!curRep.isDue()) {
       LogTo.Debug("No due repetition to dismiss.", true);
-      if (table.removedDeleted) await this.writeQueueTable(table);
+      if (table.removeDeleted) await this.writeQueueTable(table);
       return;
     }
 
     table.removeCurrentRep();
     LogTo.Console("Dismissed repetition: " + curRep.link, true);
     await this.writeQueueTable(table);
+    await this.plugin.updateStatusBar();
   }
 
   async loadTable(): Promise<MarkdownTable> {
@@ -90,7 +66,7 @@ export class Queue {
   async goToCurrentRep() {
     let table = await this.loadTable();
     if (!table || !table.hasReps()) {
-      if (table.removedDeleted) await this.writeQueueTable(table);
+      if (table.removeDeleted) await this.writeQueueTable(table);
       LogTo.Console("No more repetitions!", true);
       return;
     }
@@ -102,14 +78,14 @@ export class Queue {
       LogTo.Console("No more repetitions!", true);
     }
 
-    if (table.removedDeleted) await this.writeQueueTable(table);
+    if (table.removeDeleted) await this.writeQueueTable(table);
   }
 
   async nextRepetition(): Promise<boolean> {
     const table = await this.loadTable();
     if (!table || !table.hasReps()) {
       LogTo.Console("No more repetitions!", true);
-      if (table.removedDeleted) await this.writeQueueTable(table);
+      if (table.removeDeleted) await this.writeQueueTable(table);
       return false;
     }
 
@@ -119,7 +95,7 @@ export class Queue {
     // Not due; don't schedule or load
     if (currentRep && !currentRep.isDue()) {
       LogTo.Debug("No more repetitions!", true);
-      if (table.removedDeleted) await this.writeQueueTable(table);
+      if (table.removeDeleted) await this.writeQueueTable(table);
       return false;
     }
 
@@ -141,6 +117,7 @@ export class Queue {
     if (this.plugin.settings.askForNextRepDate) {
       new NextRepScheduler(this.plugin, currentRep, table).open();
     }
+    await this.plugin.updateStatusBar();
     return true;
   }
 
@@ -187,6 +164,7 @@ export class Queue {
     }
 
     await this.writeQueueTable(table);
+    await this.plugin.updateStatusBar();
   }
 
   getQueueAsTFile() {

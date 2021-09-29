@@ -105,5 +105,6 @@ export class NextRepScheduler extends ModalBase {
     this.curRep.priority = priority;
     this.curRep.interval = interval;
     await this.plugin.queue.writeQueueTable(this.table);
+    await this.plugin.updateStatusBar();
   }
 }
