@@ -70,9 +70,9 @@ export default class IW extends Plugin {
   }
 
   getDefaultQueuePath() {
-    return [this.settings.queueFolderPath, this.settings.queueFileName].join(
+    return normalizePath([this.settings.queueFolderPath, this.settings.queueFileName].join(
       "/"
-    );
+    ));
   }
 
   createTagMap() {

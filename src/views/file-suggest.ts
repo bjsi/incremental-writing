@@ -1,6 +1,8 @@
 import { App, TAbstractFile, TFile, TFolder } from "obsidian";
 import { TextInputSuggest } from "./suggest";
 import IW from "../main";
+import path from "path";
+import { LogTo } from "src/logger";
 
 export class FileSuggest extends TextInputSuggest<TFile> {
   folder: () => TFolder;
@@ -19,28 +21,31 @@ export class FileSuggest extends TextInputSuggest<TFile> {
   getSuggestions(inputStr: string): TFile[] {
     const abstractFiles = this.app.vault.getAllLoadedFiles();
     const files: TFile[] = [];
-    const lowerCaseInputStr = inputStr.toLowerCase();
 
-    abstractFiles.forEach((file: TAbstractFile) => {
-      if (
-        file instanceof TFile &&
-        file.parent === this.folder() &&
-        file.extension === "md" &&
-        file.path.toLowerCase().contains(lowerCaseInputStr)
-      ) {
+    for (const file of abstractFiles) {
+      if (!(file instanceof TFile))
+	      continue;
+
+      if (!(this.plugin.files.isDescendantOf(file, this.folder())))
+	  continue;
+        
+      if (file.extension !== "md")
+	      continue
+
+      const relPath = path.relative(this.folder().path, file.path);
+      if (relPath.contains(inputStr))
         files.push(file);
       }
-    });
 
     return files;
   }
 
   renderSuggestion(file: TFile, el: HTMLElement): void {
-    el.setText(file.name);
+    el.setText(path.relative(this.plugin.settings.queueFolderPath, file.path));
   }
 
   selectSuggestion(file: TFile): void {
-    this.inputEl.value = file.name;
+    this.inputEl.value = path.relative(this.plugin.settings.queueFolderPath, file.path)
     this.inputEl.trigger("input");
     this.close();
   }

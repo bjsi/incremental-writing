@@ -16,6 +16,7 @@ import { MarkdownTableRow } from "../markdown";
 import "../helpers/date-utils";
 import "../helpers/number-utils";
 import { NaturalDateSuggest } from "./date-suggest";
+import path from "path";
 
 abstract class ReviewModal extends ModalBase {
   protected title: string;
@@ -40,8 +41,7 @@ abstract class ReviewModal extends ModalBase {
 
     contentEl.appendText("Queue: ");
     this.inputQueueField = new TextComponent(contentEl)
-      .setPlaceholder("Example: queue.md")
-      .setValue(this.plugin.files.getTFile(this.plugin.queue.queuePath).name);
+      .setPlaceholder(path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath));
     let folderFunc = () =>
       this.plugin.app.vault.getAbstractFileByPath(
         this.plugin.settings.queueFolderPath
@@ -114,8 +114,9 @@ abstract class ReviewModal extends ModalBase {
   }
 
   getQueuePath() {
-    let queue = this.inputQueueField.getValue();
-    if (!queue.endsWith(".md")) queue += ".md";
+    const queue = this.inputQueueField.getValue() === ""
+    	? path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath)
+	: this.inputQueueField.getValue().withExtension(".md");
 
     return normalizePath(
       [this.plugin.settings.queueFolderPath, queue].join("/")

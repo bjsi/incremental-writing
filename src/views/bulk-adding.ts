@@ -16,6 +16,7 @@ import "../helpers/number-utils.ts";
 import "../helpers/date-utils.ts";
 import "../helpers/str-utils.ts";
 import { NaturalDateSuggest } from "./date-suggest";
+import path from "path";
 
 export class BulkAdderModal extends ModalBase {
   private queuePath: string;
@@ -66,7 +67,10 @@ export class BulkAdderModal extends ModalBase {
   }
 
   protected getQueuePath() {
-    let queue = this.queueComponent.getValue().withExtension(".md");
+    const queue = this.queueComponent.getValue() === ""
+    	? path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath)
+	: this.queueComponent.getValue().withExtension(".md");
+
     return normalizePath(
       [this.plugin.settings.queueFolderPath, queue].join("/")
     );
@@ -82,8 +86,7 @@ export class BulkAdderModal extends ModalBase {
 
     contentEl.appendText("Queue: ");
     this.queueComponent = new TextComponent(contentEl)
-      .setPlaceholder("Example: queue.md")
-      .setValue(this.plugin.files.getTFile(this.queuePath).name)
+      .setPlaceholder(path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath))
       .onChange(
         debounce(
           (_: string) => {

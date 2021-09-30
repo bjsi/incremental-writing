@@ -2,6 +2,7 @@ import { MarkdownTableRow } from "../markdown";
 import "../helpers/str-utils";
 import { normalizePath, parseLinktext } from "obsidian";
 import IW from "../main";
+import path from "path";
 
 export class StatusBar {
   private statusBarAdded: boolean;
@@ -37,8 +38,8 @@ export class StatusBar {
   }
 
   updateCurrentQueue(queuePath: string) {
-    const name =
-      normalizePath(queuePath)?.split("/")?.last()?.rtrim(".md") || "";
+    const normalized = normalizePath(queuePath);
+    const name = path.relative(this.plugin.settings.queueFolderPath, normalized).rtrim(".md")
     this.queueText.innerText =
       name && name.length > 0 ? "Queue: " + name : "Queue: None";
   }

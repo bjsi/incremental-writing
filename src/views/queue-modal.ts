@@ -1,4 +1,6 @@
-import { normalizePath, FuzzySuggestModal, TFolder } from "obsidian";
+import { normalizePath, FuzzySuggestModal } from "obsidian";
+import * as path from 'path';
+import { LogTo } from "src/logger";
 import IW from "../main";
 
 export class QueueLoadModal extends FuzzySuggestModal<string> {
@@ -9,27 +11,28 @@ export class QueueLoadModal extends FuzzySuggestModal<string> {
     this.plugin = plugin;
   }
 
-  onChooseItem(item: string, evt: MouseEvent | KeyboardEvent) {
-    let path = [this.plugin.settings.queueFolderPath, item].join("/");
-    this.plugin.loadQueue(path);
+  async onChooseItem(item: string, _: MouseEvent | KeyboardEvent) {
+    const path = [this.plugin.settings.queueFolderPath, item].join("/");
+    LogTo.Debug("Chose: " + path);
+    await this.plugin.loadQueue(path);
   }
 
   getItems(): string[] {
-    let folder = this.plugin.files.getTFolder(
-      normalizePath(this.plugin.settings.queueFolderPath)
-    );
+    const queueFolderPath = normalizePath(this.plugin.settings.queueFolderPath)
+    const defaultQueue = path.relative(queueFolderPath, this.plugin.getDefaultQueuePath());
+    const folder = this.plugin.files.getTFolder(queueFolderPath);
     if (folder) {
       let files = this.plugin.app.vault
         .getMarkdownFiles()
         .filter((file) => this.plugin.files.isDescendantOf(file, folder))
-        .map((file) => file.name);
+        .map((file) => path.relative(queueFolderPath, file.path));
 
-      if (!files.some((f) => f === this.plugin.settings.queueFileName))
-        files.push(this.plugin.settings.queueFileName);
+      if (!files.some((f) => f === defaultQueue))
+        files.push(defaultQueue);
       return files;
     }
 
-    return [this.plugin.settings.queueFileName];
+    return [defaultQueue];
   }
 
   getItemText(item: string) {
