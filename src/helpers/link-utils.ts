@@ -52,7 +52,6 @@ export class LinkEx extends ObsidianUtilsBase {
     const linkPaths = links
       .map((link) => this.createAbsoluteLink(link.link, file.path))
       .filter((x) => x !== null && x.length > 0);
-    LogTo.Debug("Links: " + linkPaths.toString());
     return linkPaths;
   }
 }

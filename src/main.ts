@@ -8,6 +8,7 @@ import {
   debounce,
   TAbstractFile,
   normalizePath,
+  MarkdownView,
 } from "obsidian";
 import { Queue } from "./queue";
 import { LogTo } from "./logger";
@@ -240,9 +241,9 @@ export default class IW extends Plugin {
   }
 
   async updateStatusBar() {
-      const table = await this.queue.loadTable();
-      this.statusBar.updateCurrentRep(table?.currentRep());
-      this.statusBar.updateCurrentQueue(this.queue.queuePath);
+    const table = await this.queue.loadTable();
+    this.statusBar.updateCurrentRep(table?.currentRep());
+    this.statusBar.updateCurrentQueue(this.queue.queuePath);
   }
 
   async loadQueue(file: string) {
@@ -258,7 +259,7 @@ export default class IW extends Plugin {
   registerCommands() {
     //
     // Queue Creation
-    
+
     this.addCommand({
       id: "create-new-iw-queue",
       name: "Create and load a new queue.",
@@ -296,7 +297,9 @@ export default class IW extends Plugin {
     this.addCommand({
       id: "dismiss-current-repetition",
       name: "Dismiss current repetition.",
-      callback: async () => { await this.queue.dismissCurrent() },
+      callback: async () => {
+        await this.queue.dismissCurrent();
+      },
       hotkeys: [],
     });
 
@@ -349,11 +352,62 @@ export default class IW extends Plugin {
     // Element Adding.
 
     this.addCommand({
+      id: "add-links-in-selected-text",
+      name: "Add links in selected text.",
+      checkCallback: (checking) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const editor = view?.editor;
+        const file = view?.file;
+
+        if (file && editor) {
+          if (!checking) {
+            const links = this.app.metadataCache.getFileCache(file).links ?? [];
+            if (!links || links.length === 0) {
+              LogTo.Debug("Active note does not contain any links.", true);
+              return;
+            }
+
+            const selection = editor.getSelection();
+            if (!selection || selection.length === 0) {
+              LogTo.Debug("No selected text.", true);
+              return;
+            }
+
+            const selectedLinks = Array.from(
+              links
+                .filter((link) => selection.contains(link.original))
+                .map((link) =>
+                  this.links.createAbsoluteLink(link.link, file.path)
+                )
+                .filter((link) => link !== null && link.length > 0)
+                .reduce((set, link) => set.add(link), new Set<string>())
+            );
+
+            if (!selectedLinks || selectedLinks.length === 0) {
+              LogTo.Debug("No selected links.", true);
+              return;
+            }
+
+            LogTo.Debug("Selected links: " + selectedLinks.toString());
+            new BulkAdderModal(
+              this,
+              this.queue.queuePath,
+              "Bulk Add Links",
+              selectedLinks
+            ).open();
+          }
+          return true;
+        }
+        return false;
+      },
+    });
+
+    this.addCommand({
       id: "bulk-add-blocks",
       name: "Bulk add blocks with references to queue.",
       checkCallback: (checking) => {
         const file = this.files.getActiveNoteFile();
-        if (file !== null) {
+        if (file != null) {
           if (!checking) {
             const refs = this.app.metadataCache.getFileCache(file).blocks;
             if (!refs) {
@@ -424,13 +478,13 @@ export default class IW extends Plugin {
         const file = this.files.getActiveNoteFile();
         if (file !== null) {
           if (!checking) {
-            const pairs = this.links.getLinksIn(file);
-            if (pairs && pairs.length > 0) {
+            const links = this.links.getLinksIn(file);
+            if (links && links.length > 0) {
               new BulkAdderModal(
                 this,
                 this.queue.queuePath,
                 "Bulk Add Links",
-                pairs
+                links
               ).open();
             } else {
               LogTo.Console("No links in the current file.", true);
