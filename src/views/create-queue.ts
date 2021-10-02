@@ -107,12 +107,14 @@ subscribeToEvents() {
     }
 
     async create() {
-	    const queueName = this.queueNameText.getValue().withExtension(".md");
+	    const queueName = this.queueNameText.getValue();
 	    if (!queueName || queueName.length === 0) {
 		LogTo.Debug("Invalid queue name.");
 		return;
 	    }
-	    const queueFile = normalizePath([this.plugin.settings.queueFolderPath, queueName].join("/"));
+
+	    const queueNameWithExt = queueName.withExtension(".md");
+	    const queueFile = normalizePath([this.plugin.settings.queueFolderPath, queueNameWithExt].join("/"));
 	    if (await this.plugin.files.exists(queueFile)) {
 		    LogTo.Debug("Queue already exists!", true);
 		    return;
