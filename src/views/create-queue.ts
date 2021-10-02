@@ -120,7 +120,10 @@ subscribeToEvents() {
 		    return;
 	    }
 
-	    const schedulerData = this.createScheduler().toString();
+	    const schedulerData = this.createScheduler()?.toString();
+	    if (!schedulerData || schedulerData.length === 0)
+		    return;
+
 	    LogTo.Debug("Creating queue: " + queueName, true);
 	    await this.plugin.files.createIfNotExists(queueFile, schedulerData);
 	    await this.plugin.loadQueue(queueFile);
