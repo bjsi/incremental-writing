@@ -109,7 +109,7 @@ subscribeToEvents() {
     async create() {
 	    const queueName = this.queueNameText.getValue();
 	    if (!queueName || queueName.length === 0) {
-		LogTo.Debug("Invalid queue name.");
+		LogTo.Debug("Invalid queue name.", true);
 		return;
 	    }
 
