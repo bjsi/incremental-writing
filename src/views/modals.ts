@@ -40,8 +40,12 @@ abstract class ReviewModal extends ModalBase {
     // Queue
 
     contentEl.appendText("Queue: ");
-    this.inputQueueField = new TextComponent(contentEl)
-      .setPlaceholder(path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath));
+    this.inputQueueField = new TextComponent(contentEl).setPlaceholder(
+      path.relative(
+        this.plugin.settings.queueFolderPath,
+        this.plugin.queue.queuePath
+      )
+    );
     let folderFunc = () =>
       this.plugin.app.vault.getAbstractFileByPath(
         this.plugin.settings.queueFolderPath
@@ -114,9 +118,13 @@ abstract class ReviewModal extends ModalBase {
   }
 
   getQueuePath() {
-    const queue = this.inputQueueField.getValue() === ""
-    	? path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath)
-	: this.inputQueueField.getValue().withExtension(".md");
+    const queue =
+      this.inputQueueField.getValue() === ""
+        ? path.relative(
+            this.plugin.settings.queueFolderPath,
+            this.plugin.queue.queuePath
+          )
+        : this.inputQueueField.getValue().withExtension(".md");
 
     return normalizePath(
       [this.plugin.settings.queueFolderPath, queue].join("/")

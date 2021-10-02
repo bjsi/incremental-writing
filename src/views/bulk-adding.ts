@@ -67,9 +67,13 @@ export class BulkAdderModal extends ModalBase {
   }
 
   protected getQueuePath() {
-    const queue = this.queueComponent.getValue() === ""
-    	? path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath)
-	: this.queueComponent.getValue().withExtension(".md");
+    const queue =
+      this.queueComponent.getValue() === ""
+        ? path.relative(
+            this.plugin.settings.queueFolderPath,
+            this.plugin.queue.queuePath
+          )
+        : this.queueComponent.getValue().withExtension(".md");
 
     return normalizePath(
       [this.plugin.settings.queueFolderPath, queue].join("/")
@@ -86,7 +90,12 @@ export class BulkAdderModal extends ModalBase {
 
     contentEl.appendText("Queue: ");
     this.queueComponent = new TextComponent(contentEl)
-      .setPlaceholder(path.relative(this.plugin.settings.queueFolderPath, this.plugin.queue.queuePath))
+      .setPlaceholder(
+        path.relative(
+          this.plugin.settings.queueFolderPath,
+          this.plugin.queue.queuePath
+        )
+      )
       .onChange(
         debounce(
           (_: string) => {

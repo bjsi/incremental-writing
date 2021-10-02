@@ -39,7 +39,9 @@ export class StatusBar {
 
   updateCurrentQueue(queuePath: string) {
     const normalized = normalizePath(queuePath);
-    const name = path.relative(this.plugin.settings.queueFolderPath, normalized).rtrim(".md")
+    const name = path
+      .relative(this.plugin.settings.queueFolderPath, normalized)
+      .rtrim(".md");
     this.queueText.innerText =
       name && name.length > 0 ? "Queue: " + name : "Queue: None";
   }

@@ -23,19 +23,15 @@ export class FileSuggest extends TextInputSuggest<TFile> {
     const files: TFile[] = [];
 
     for (const file of abstractFiles) {
-      if (!(file instanceof TFile))
-	      continue;
+      if (!(file instanceof TFile)) continue;
 
-      if (!(this.plugin.files.isDescendantOf(file, this.folder())))
-	  continue;
-        
-      if (file.extension !== "md")
-	      continue
+      if (!this.plugin.files.isDescendantOf(file, this.folder())) continue;
+
+      if (file.extension !== "md") continue;
 
       const relPath = path.relative(this.folder().path, file.path);
-      if (relPath.contains(inputStr))
-        files.push(file);
-      }
+      if (relPath.contains(inputStr)) files.push(file);
+    }
 
     return files;
   }
@@ -45,7 +41,10 @@ export class FileSuggest extends TextInputSuggest<TFile> {
   }
 
   selectSuggestion(file: TFile): void {
-    this.inputEl.value = path.relative(this.plugin.settings.queueFolderPath, file.path)
+    this.inputEl.value = path.relative(
+      this.plugin.settings.queueFolderPath,
+      file.path
+    );
     this.inputEl.trigger("input");
     this.close();
   }
