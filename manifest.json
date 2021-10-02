@@ -3,7 +3,7 @@
   "name": "Incremental Writing",
   "description": "Incrementally review notes and blocks over time.",
   "isDesktopOnly": true,
-  "version": "0.4",
+  "version": "0.4.1",
   "author": "Experimental Learning",
   "authorUrl": "https://github.com/bjsi/incremental-writing",
   "js": "main.js"
