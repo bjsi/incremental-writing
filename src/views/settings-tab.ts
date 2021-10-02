@@ -122,9 +122,9 @@ export class IWSettingsTab extends PluginSettingTab {
                   return;
                 }
 
-                const validDates = inputDates
-                  .filter(([_, date]) => date != null && date.date)
-                  .map(([s, _]) => s);
+                const validDates: string[] = inputDates
+                  .filter(([_, date]: [string, any]) => date != null && date.date)
+                  .map(([s, _]: [string, Date]) => s);
 
                 if (inputDates.length !== validDates.length) {
                   LogTo.Debug(
@@ -134,13 +134,13 @@ export class IWSettingsTab extends PluginSettingTab {
                   );
                 }
 
-                const dateOptionsRecord: Record<
-                  string,
-                  string
-                > = validDates.reduce(
-                  (acc: Record<string, string>, x: string) => (acc[x] = x),
-                  {}
-                );
+                const dateOptionsRecord: Record<string, string> = validDates
+			.reduce((acc, x) => 
+				{ 
+					acc[x] = x;
+					return acc;
+				}, {} as Record<string, string>);
+
                 LogTo.Debug(
                   "Setting dropdown date options to " +
                     JSON.stringify(dateOptionsRecord)
