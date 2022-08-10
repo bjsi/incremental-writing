@@ -104,7 +104,7 @@ export class MarkdownTable {
       Number(arr[1]),
       arr[2],
       Number(arr[3]),
-      new Date(arr[4])
+      new Date(arr[4].replace(/-/g, '\/'))
     );
   }
 
